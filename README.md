@@ -1,5 +1,9 @@
 # SupplyGuard
 
+Deployed on https://213-239-170-70.sslip.io
+Login : demo
+Password : supplyguard2026
+
 **See supplier risk early. Switch suppliers in time.**
 
 SupplyGuard is an agentic supplier-risk assistant for railway procurement, built for the project sponsor **Siemens Mobility**
