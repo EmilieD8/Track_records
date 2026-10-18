@@ -109,41 +109,14 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
             </g>
           );
         })}
-        {visible.filter((n) => labelled(n) && n.r * k > 16).map((n) => {
+        {visible.filter((n) => labelled(n) && n.r * k > 14).map((n) => {
           const r = n.r * k;
           const kind = n.data.kind;
           const fs = Math.max(9, Math.min(16, r / 4.5));
           return (
             <g key={`l-${n.data.id ?? n.data.name}`} transform={`translate(${tx(n)},${ty(n)})`} pointerEvents="none" textAnchor="middle">
-              {kind === "item" ? (
-                <>
-                  <text y={-2} fontSize={Math.max(11, Math.min(22, r / 5))} fontWeight={700} fill="#0f172a" style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 3 }}>{n.data.name}</text>
-                  <text y={Math.max(11, Math.min(22, r / 5)) + 6} fontSize={Math.max(9, Math.min(14, r / 8))} fill="#0f172a" style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 3 }}>
-                    {n.children?.length ?? 0} suppliers{n.data.quantity ? ` · qty ${n.data.quantity}` : ""}</text>
-                  {(n.data as any).recommended_name && <text y={Math.max(11, Math.min(22, r / 5)) + Math.max(9, Math.min(14, r / 8)) + 12} fontSize={Math.max(9, Math.min(13, r / 9))} fontWeight={600} fill="#004a52" style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 3 }}>
-                    ★ recommended: {(n.data as any).recommended_name} (risk {n.data.risk})</text>}
-                </>
-              ) : kind === "category" ? (
-                <>
-                  <text y={-r + fs + 6} fontSize={fs} fontWeight={600} fill="#0f172a" style={{ paintOrder: "stroke", stroke: "#f8fafc", strokeWidth: 3 }}>{n.data.name}</text>
-                  {n.data.category && <text y={-r + fs * 2 + 8} fontSize={Math.max(8, fs * 0.7)} fill="#64748b" style={{ paintOrder: "stroke", stroke: "#f8fafc", strokeWidth: 3 }}>{n.data.kind === "item" ? `${n.children?.length ?? 0} suppliers · best risk ${n.data.risk}${n.data.quantity ? ` · qty ${n.data.quantity}` : ""}` : n.data.category}</text>}
-                </>
-              ) : (
-                kind === "supplier" ? (
-                  <>
-                    <text y={-fs * 0.1} fontSize={fs * 1.5} fontWeight={700} fill="#fff" fontFamily="JetBrains Mono">{n.data.risk}</text>
-                    <text y={-fs * 1.45} fontSize={Math.max(8, fs * 0.5)} fill="#fff" opacity={0.95} fontFamily="JetBrains Mono" fontWeight={(n.data as any).recommended ? 700 : 400}>{(n.data as any).recommended ? "★ RECOMMENDED · RISK" : "RISK"}</text>
-                    <text y={fs * 1.25} fontSize={Math.max(9, fs * 0.72)} fill="#fff" fontWeight={700} textDecoration="underline"
-                      pointerEvents="visiblePainted" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); onOpenSupplier(n.data.id!); }}>
-                      {n.data.name}<title>Open supplier dashboard</title></text>
-                    {r > 60 && <text y={fs * 2.3} fontSize={Math.max(8, fs * 0.5)} fill="#fff" opacity={0.85}>{n.data.country} · delivery {n.data.delivery?.toFixed(0)}%</text>}
-                  </>
-                ) : (
-                  <>
-                    <text y={-fs * 0.2} fontSize={fs * 1.25} fontWeight={700} fill="#fff" fontFamily="JetBrains Mono">{n.data.risk}</text>
-                    {r > 34 && <text y={fs * 1.05} fontSize={Math.max(8, fs * 0.62)} fill="#fff" fontWeight={600}>{n.data.name}</text>}
-                  </>
-                )
+              {kind === "item" ? <ItemLabel n={n} r={r} /> : kind === "supplier" ? <SupplierLabel n={n} r={r} onOpen={onOpenSupplier} /> : (
+                <text y={-r + fs + 6} fontSize={fs} fontWeight={600} fill="#0f172a" style={{ paintOrder: "stroke", stroke: "#f8fafc", strokeWidth: 3 }}>{n.data.name}</text>
               )}
             </g>
           );
@@ -180,4 +153,86 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
       </div>
     </div>
   );
+}
+
+// ---------------------------------------------------------------- text that always fits inside its bubble
+const CHAR_W = 0.58; // average glyph width relative to font size (Inter)
+const chord = (r: number, y: number) => 2 * Math.sqrt(Math.max(0, r * r - y * y)) * 0.86;
+const fitFs = (text: string, width: number, maxFs: number, minFs = 7) => {
+  const fs = Math.min(maxFs, width / Math.max(1, text.length * CHAR_W));
+  return fs >= minFs ? fs : 0;
+};
+/** Lay out lines top-to-bottom centred on 0; each line gets the largest size that fits the circle at its height. */
+function fitLines(r: number, lines: { text: string; max: number; weight?: number; mono?: boolean; min?: number; group?: string }[]) {
+  const gap = 0.25;
+  let sizes = lines.map((l) => Math.min(l.max, r * 0.5));
+  for (let pass = 0; pass < 3; pass++) {
+    const total = sizes.reduce((a, b) => a + b * (1 + gap), 0);
+    let y = -total / 2;
+    sizes = lines.map((l, i) => {
+      const yc = y + sizes[i] * 0.5;
+      y += sizes[i] * (1 + gap);
+      return fitFs(l.text, chord(r, Math.abs(yc) + sizes[i] * 0.5), l.max, l.min);
+    });
+    // lines of one group (a wrapped name) share the smallest size so the name reads as one block
+    for (const g of new Set(lines.map((l) => l.group).filter(Boolean))) {
+      const m = Math.min(...sizes.filter((_, i) => lines[i].group === g));
+      sizes = sizes.map((v, i) => (lines[i].group === g ? m : v));
+    }
+  }
+  const total = sizes.reduce((a, b) => a + (b ? b * (1 + gap) : 0), 0);
+  let y = -total / 2;
+  return lines.map((l, i) => {
+    const fs = sizes[i];
+    const out = { ...l, fs, y: y + fs * 0.85 };
+    if (fs) y += fs * (1 + gap);
+    return out;
+  }).filter((l) => l.fs > 0);
+}
+/** Word-wrap into balanced lines (never cuts a word, never drops text). */
+const wrapName = (s: string, per = 18) => {
+  const n = Math.min(4, Math.max(1, Math.ceil(s.length / per)));
+  const target = s.length / n;
+  const out: string[] = [];
+  let cur = "";
+  for (const w of s.split(/\s+/)) {
+    if (cur && (cur + " " + w).length > target + 3 && out.length < n - 1) { out.push(cur); cur = w; }
+    else cur = cur ? `${cur} ${w}` : w;
+  }
+  return [...out, cur];
+};
+const splitName = (s: string) => {
+  const i = s.lastIndexOf(" ");
+  return i > 0 ? [s.slice(0, i), s.slice(i + 1)] : [s];
+};
+
+function ItemLabel({ n, r }: { n: N; r: number }) {
+  const d = n.data as any;
+  const lines = fitLines(r, [
+    ...wrapName(d.name).map((t) => ({ text: t, max: 22, weight: 700, min: 5, group: "name" })),
+    { text: `${n.children?.length ?? 0} suppliers${d.quantity ? ` · qty ${d.quantity}` : ""}`, max: 13 },
+    ...(d.recommended_name ? [{ text: "★ recommended", max: 12, weight: 700 }, { text: `${d.recommended_name} (risk ${d.risk})`, max: 12, weight: 600 }] : []),
+  ]);
+  return <>{lines.map((l, i) => (
+    <text key={i} y={l.y} fontSize={l.fs} fontWeight={l.weight ?? 400} fill={l.text.startsWith("★") || l.text.includes("(risk") ? "#004a52" : "#0f172a"}
+      style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 3 }}>{l.text}</text>))}</>;
+}
+
+function SupplierLabel({ n, r, onOpen }: { n: N; r: number; onOpen: (id: string) => void }) {
+  const d = n.data as any;
+  const name = d.name.length > 14 && r < 90 ? splitName(d.name) : [d.name];
+  const lines = fitLines(r, [
+    { text: d.recommended ? "★ RECOMMENDED" : "RISK", max: 11, weight: d.recommended ? 700 : 400, mono: true },
+    { text: String(d.risk), max: Math.min(40, r * 0.55), weight: 700, mono: true },
+    ...name.map((t: string) => ({ text: t, max: 15, weight: 700 })),
+    ...(r > 70 ? [{ text: `${d.country} · delivery ${d.delivery?.toFixed(0)}%`, max: 10 }] : []),
+  ]);
+  return <>{lines.map((l, i) => {
+    const isName = name.includes(l.text) && !l.mono;
+    return (
+      <text key={i} y={l.y} fontSize={l.fs} fontWeight={l.weight ?? 400} fill="#fff" fontFamily={l.mono ? "JetBrains Mono" : undefined}
+        textDecoration={isName ? "underline" : undefined} pointerEvents={isName ? "visiblePainted" : "none"} style={isName ? { cursor: "pointer" } : undefined}
+        onClick={isName ? (e) => { e.stopPropagation(); onOpen(d.id); } : undefined}>
+        {l.text}{isName && <title>Open supplier dashboard</title>}</text>);
+  })}</>;
 }

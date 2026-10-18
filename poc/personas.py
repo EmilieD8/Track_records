@@ -82,10 +82,22 @@ def email_of(p: dict) -> str:
     return p.get("email") or p["name"].lower().replace(" ", ".") + "@railco.eu"
 
 
+DEFAULT_UI_CONFIG = {"per_item": 8, "panels": ["bubbles", "recommendations", "copilot"]}
+
+
+def _default_spec(p: dict) -> dict:
+    return {"title": f"{p['role']} workspace", "greeting": f"Hello {p['name'].split()[0]}, what are we sourcing today?",
+            "summary": "Request-driven sourcing: items first, then the suppliers that can deliver them and their risk.",
+            "kpis": [], "panels": DEFAULT_UI_CONFIG["panels"], "highlight_categories": [],
+            "recommendation_focus": "lowest risk with proven delivery", "generated_by": "nvidia/nemotron-3-super-120b-a12b"}
+
+
 def load_personas() -> list[dict]:
     ps = json.loads(PERSONAS_PATH.read_text()) if PERSONAS_PATH.exists() else [dict(p) for p in DEFAULT_PERSONAS]
     for p in ps:
         p["email"] = email_of(p)
+        p.setdefault("ui_config", dict(DEFAULT_UI_CONFIG))
+        p.setdefault("ui_spec", _default_spec(p))
     return ps
 
 
