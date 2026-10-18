@@ -1,0 +1,6 @@
+.env
+.venv/
+.cache/
+personas.json
+__pycache__/
+data/web_raw/

@@ -1,0 +1,7 @@
+CONTRACT SUMMARY (SYNTHETIC DEMO DOCUMENT)
+Supplier: SUPP_06901 "Prime Technologies 620"
+Scope: Bogie frames for regional EMU fleet (SIMULATED)
+Contract value: EUR 50,000,000 (framework, 2025-2029)
+Lead time: 38 weeks. Single-source: yes. Penalty clause: 0.5% per week of delay, capped at 10%.
+Exit clause: 12 months notice. Tooling owned by supplier (risk: switching requires new tooling, est. EUR 2.1M).
+Last QBR note (2026-08): capacity constraints at the welding line, 2 shifts instead of 3 due to labour shortage.

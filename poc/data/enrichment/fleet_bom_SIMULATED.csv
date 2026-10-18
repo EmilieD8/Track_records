@@ -1,0 +1,24 @@
+fleet,trainsets,assembly,primary_supplier,second_source,single_source,units_per_trainset,data_label
+RegioFlex EMU,120,Bogies & wheelsets,SUPP_06901,,True,4,SIMULATED
+RegioFlex EMU,120,Brake systems,SUPP_09733,,True,7,SIMULATED
+RegioFlex EMU,120,Traction & propulsion,SUPP_04684,SUPP_05700,False,8,SIMULATED
+RegioFlex EMU,120,Doors & access systems,SUPP_04288,SUPP_06672,False,8,SIMULATED
+RegioFlex EMU,120,HVAC,SUPP_06273,,True,8,SIMULATED
+RegioFlex EMU,120,Passenger information & IT,SUPP_08922,SUPP_06002,False,4,SIMULATED
+RegioFlex EMU,120,Couplers & draft gear,SUPP_04226,,True,5,SIMULATED
+RegioFlex EMU,120,Interior & seating,SUPP_08778,SUPP_06644,False,3,SIMULATED
+ICX-300 high-speed,60,Bogies & wheelsets,SUPP_06901,,True,5,SIMULATED
+ICX-300 high-speed,60,Brake systems,SUPP_09733,,True,1,SIMULATED
+ICX-300 high-speed,60,Traction & propulsion,SUPP_04684,SUPP_05700,False,4,SIMULATED
+ICX-300 high-speed,60,Signalling & ETCS,SUPP_01319,,True,4,SIMULATED
+ICX-300 high-speed,60,Pantographs & HV equipment,SUPP_05177,SUPP_09885,False,7,SIMULATED
+ICX-300 high-speed,60,HVAC,SUPP_00126,SUPP_01968,False,4,SIMULATED
+ICX-300 high-speed,60,Electronics & PCBs,SUPP_05160,,True,2,SIMULATED
+ICX-300 high-speed,60,Doors & access systems,SUPP_04288,SUPP_06672,False,2,SIMULATED
+CargoMax freight loco,80,Bogies & wheelsets,SUPP_01802,,True,2,SIMULATED
+CargoMax freight loco,80,Brake systems,SUPP_07741,,True,5,SIMULATED
+CargoMax freight loco,80,Traction & propulsion,SUPP_08641,,True,8,SIMULATED
+CargoMax freight loco,80,Couplers & draft gear,SUPP_02320,,True,6,SIMULATED
+CargoMax freight loco,80,Signalling & ETCS,SUPP_06165,,True,3,SIMULATED
+CargoMax freight loco,80,Castings & forgings,SUPP_08294,SUPP_03108,False,3,SIMULATED
+CargoMax freight loco,80,Cables & connectors,SUPP_09321,,True,4,SIMULATED

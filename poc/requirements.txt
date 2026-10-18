@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+streamlit>=1.40
+openai>=1.40
+tavily-python
+pandas
+numpy
+pypdf
+pymupdf
+python-docx
+python-dotenv
+pillow
+python-multipart
