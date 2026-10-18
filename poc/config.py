@@ -7,10 +7,12 @@ ROOT = Path(__file__).resolve().parent
 load_dotenv(ROOT / ".env")
 load_dotenv(ROOT.parent / ".env")
 
-DATASET_PATH = Path(os.getenv("DATASET_PATH", ROOT.parent / "supplier_risk_dataset.csv"))
+DATASET_PATH = Path(os.getenv("DATASET_PATH", ROOT / "data" / "supplier_risk_dataset.csv"))
 EXPLAINER_PATH = ROOT.parent / "data_explainer.html"
-CACHE_DIR = ROOT / ".cache"
-PERSONAS_PATH = ROOT / "personas.json"
+# Vercel functions only have a writable /tmp (ephemeral); everything the app saves goes under STATE_DIR.
+STATE_DIR = Path("/tmp/supplyguard") if os.getenv("VERCEL") else ROOT
+CACHE_DIR = STATE_DIR / ".cache"
+PERSONAS_PATH = STATE_DIR / "personas.json"
 
 # Nebius Token Factory (OpenAI-compatible). Verify the URL in the Token Factory console.
 NEBIUS_BASE_URL = os.getenv("NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1/")

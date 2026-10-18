@@ -1,5 +1,6 @@
 """SupplyGuard API: FastAPI wrapper around the agents, data tools and extractor. Serves the React build too."""
 import json
+import os
 import queue
 import threading
 from dataclasses import asdict
@@ -370,7 +371,7 @@ def chat(req: ChatReq):
 
 @app.on_event("startup")
 def _auto_extract():
-    if not (NVIDIA_API_KEY or NEBIUS_API_KEY) or not Path(STATE["folder"]).is_dir():
+    if os.getenv("VERCEL") or not (NVIDIA_API_KEY or NEBIUS_API_KEY) or not Path(STATE["folder"]).is_dir():
         return
     provider = "NVIDIA API (build.nvidia.com)" if NVIDIA_API_KEY else "Nebius Token Factory"
     threading.Thread(target=lambda: STATE.update(docs=[extract_file(f, provider, OCR_MODELS[0])

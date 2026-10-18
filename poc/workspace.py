@@ -10,11 +10,11 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 import data_tools as dt
-from config import ROOT
+from config import CACHE_DIR, ROOT, STATE_DIR
 from llm import chat
 
 router = APIRouter(prefix="/api")
-NOTES_PATH = ROOT / "data" / "buyer_notes.json"
+NOTES_PATH = STATE_DIR / "data" / "buyer_notes.json"
 TODAY = date(2026, 10, 18)
 
 PARTS = {
@@ -319,7 +319,7 @@ async def procurement_upload(file: UploadFile = File(...), model: str = Form("nv
     from pathlib import Path
 
     from extract import extract_file
-    up = ROOT / ".cache" / "uploads"
+    up = CACHE_DIR / "uploads"
     up.mkdir(parents=True, exist_ok=True)
     dest = up / Path(file.filename or "upload.pdf").name
     dest.write_bytes(await file.read())
@@ -401,7 +401,7 @@ def procurement_bubbles(req: BubbleReq):
 
 
 # ---------------------------------------------------------------- user procurement projects (chat memory)
-USER_PROJECTS = ROOT / "data" / "user_projects.json"
+USER_PROJECTS = STATE_DIR / "data" / "user_projects.json"
 
 
 def _load_up() -> dict:
