@@ -89,7 +89,7 @@ def recommendations(category: str = "", n: int = 3, eu_only: bool = False):
         pool = pool[~pool.supplierID.isin([k for k, v in DISRUPTED.items() if not v["recommendable_after"]])]
         pool = pool.assign(score=pool[dt.T] - 0.5 * (pool[dt.DELIV] - 90) - 5 * pool.iris_certified.astype(int))
         buy = []
-        for _, r in pool.nsmallest(n, "score").iterrows():
+        for _, r in pool.sort_values([dt.T, dt.DELIV], ascending=[True, False]).head(n).iterrows():  # strictly lowest risk first
             reasons = [f"risk {int(r[dt.T])} ({r[f'{dt.T}_Level']})", f"delivery {r[dt.DELIV]:.0f}%"]
             if r.iris_certified:
                 reasons.append("IRIS certified")
@@ -338,15 +338,16 @@ class BubbleReq(BaseModel):
 
 
 def _rank(sups: list[dict], priority: str) -> list[dict]:
-    """Recommend only acceptable suppliers (risk < 50 when available); the chat priority adjusts the score,
-    it never overrides risk. Lower score = better."""
+    """Recommend only acceptable suppliers (risk < 50 when available, no unresolved email disruption).
+    'Lowest risk' (default) = strictly the lowest total risk, delivery only breaks ties. The other priorities are an
+    explicit user trade-off (risk adjusted by delivery or proven volume). Lower score = better."""
     ok = [s for s in sups if s["risk"] < 50 and not s.get("alert")] or sorted(sups, key=lambda s: s["risk"])[:3]
     if priority == "Delivery reliability":
         score = lambda s: s["risk"] - 2.0 * (s["delivery"] - 90)
     elif priority == "Proven high volume":
         score = lambda s: s["risk"] - 8.0 * np.log10(max(s["po"], 1e5) / 1e6)
     else:
-        score = lambda s: s["risk"] - 0.3 * (s["delivery"] - 90)
+        return sorted(ok, key=lambda s: (s["risk"], -s["delivery"], -s["po"]))
     return sorted(ok, key=score)
 
 

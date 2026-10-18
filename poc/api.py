@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -16,7 +16,7 @@ import data_tools as dt
 from agents import Run, build_system_prompt, run_supervisor
 import guardrails as gr
 from config import ENRICH_DIR, NEBIUS_API_KEY, NVIDIA_API_KEY, OCR_MODELS, PROVIDERS, ROOT, TAVILY_API_KEY
-from extract import chunk_docs, extract_file, list_files
+from extract import DOC_EXT, chunk_docs, extract_file, list_files
 from llm import list_models
 from personas import load_personas, save_personas
 
@@ -261,6 +261,27 @@ def extract(req: ExtractReq):
     STATE["folder"] = req.folder
     STATE["docs"] = [extract_file(f, req.provider, req.model) for f in files]
     return docs_list()
+
+
+@app.post("/api/docs/upload")
+async def upload_docs(files: list[UploadFile] = File(...), provider: str = Form("NVIDIA API (build.nvidia.com)"),
+                      model: str = Form("nvidia/nemotron-parse")):
+    """Files picked on the user's own computer (single files or a whole folder): saved, extracted (OCR when needed)
+    and added to the shared documents the Document Agent searches."""
+    dest = ROOT / ".cache" / "uploads" / "docs"
+    dest.mkdir(parents=True, exist_ok=True)
+    added = []
+    for f in files:
+        rel = Path((f.filename or "upload").replace("\\", "/"))
+        if rel.suffix.lower() not in DOC_EXT:
+            continue
+        out = dest / "__".join(x for x in rel.parts if x not in ("..", "/", ""))  # flatten folder path, no traversal
+        out.write_bytes(await f.read())
+        rec = extract_file(out, provider, model)
+        rec["name"] = str(rel)
+        STATE["docs"] = [d for d in STATE["docs"] if d["path"] != rec["path"]] + [rec]
+        added.append(rec["name"])
+    return {"added": added, "skipped": len(files) - len(added), "docs": docs_list()}
 
 
 @app.get("/api/docs")

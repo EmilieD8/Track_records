@@ -3,6 +3,7 @@ import { CheckCircle2, FileSearch, Folder, FolderOpen, Globe, Loader2, ScanText,
 import { api, type Persona } from "../api";
 import { useApp } from "../App";
 import { Card, Tag } from "../components/ui";
+import DocPicker from "../components/DocPicker";
 
 const SENIORITY = ["Junior Buyer", "Senior Buyer / Lead Specialist", "Category Manager", "Head of Procurement", "Executive"];
 
@@ -12,7 +13,6 @@ export default function Setup() {
   const [draft, setDraft] = useState<Persona | null>(null);
   const [models, setModels] = useState<string[]>([]);
   const [folder, setFolder] = useState("");
-  const [browse, setBrowse] = useState<any | null>(null);
   const [ocrProvider, setOcrProvider] = useState("NVIDIA API (build.nvidia.com)");
   const [ocrModel, setOcrModel] = useState("nvidia/nemotron-parse");
   const [docs, setDocs] = useState<any[]>([]);
@@ -33,7 +33,6 @@ export default function Setup() {
     setBusy(true);
     try { setDocs(await api.extract(folder, ocrProvider, ocrModel)); app.refreshStatus(); } finally { setBusy(false); }
   };
-  const openBrowse = async (p?: string) => setBrowse(await api.fs(p ?? folder));
 
   const field = (k: keyof Persona, label: string, ph = "") => (
     <label className="block">
@@ -83,8 +82,8 @@ export default function Setup() {
         <Card title="2 · Shared documents" icon={<FolderOpen size={18} />} right={<Tag>NVIDIA OCR</Tag>}>
           <div className="flex gap-2">
             <input className="input font-mono text-xs" value={folder} onChange={(e) => setFolder(e.target.value)} />
-            <button className="btn btn-ghost" onClick={() => openBrowse()}><Folder size={14} /> Browse</button>
           </div>
+          <div className="mt-2"><div className="label mb-1">Or add documents from your computer</div><DocPicker /></div>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <label><span className="label">OCR provider</span>
               <select className="input mt-1" value={ocrProvider} onChange={(e) => setOcrProvider(e.target.value)}>
@@ -132,25 +131,6 @@ export default function Setup() {
         </Card>
       </div>
 
-      {browse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-ink/40 backdrop-blur-[2px]" onClick={() => setBrowse(null)}>
-          <div className="card w-[640px] max-w-[92vw] p-5" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between"><h3 className="text-lg font-semibold">Choose a shared folder</h3>
-              <button onClick={() => setBrowse(null)}><X size={18} /></button></div>
-            <div className="mt-2 rounded bg-canvas p-2 font-mono text-xs">{browse.path}</div>
-            <div className="mt-3 grid max-h-72 grid-cols-2 gap-1 overflow-auto">
-              <button className="btn btn-ghost justify-start" onClick={() => openBrowse(browse.parent)}>.. up</button>
-              {browse.dirs.map((d: string) => (
-                <button key={d} className="btn btn-ghost justify-start truncate" onClick={() => openBrowse(`${browse.path}/${d}`)}><Folder size={14} />{d}</button>
-              ))}
-            </div>
-            <p className="mt-3 text-xs text-muted">{browse.file_count} supported files in this folder (incl. subfolders)</p>
-            <div className="mt-3 flex justify-end">
-              <button className="btn btn-primary" onClick={() => { setFolder(browse.path); setBrowse(null); }}>Use this folder</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

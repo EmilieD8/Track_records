@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Check, Cpu, Database, Folder, Globe, KeyRound, Loader2, LogIn, Mail, ShieldCheck, Sparkles, UserCog, Wand2 } from "lucide-react";
 import { api } from "../api";
 import { SiemensLogo, useApp, type UiConfig } from "../App";
+import DocPicker from "../components/DocPicker";
 
 const PANELS = ["bubbles", "recommendations", "copilot"];
 const STEPS = ["Saving your profile and connectors", "Indexing your project folder", "Nemotron is designing your layout", "Preparing your projects"];
@@ -136,8 +137,9 @@ export default function Login({ configure }: { configure: boolean }) {
                   on={conn.db} onChange={(v) => setConn({ ...conn, db: v })} />
                 <div className="rounded border border-line p-3">
                   <div className="flex items-center gap-2 text-sm font-semibold"><Folder size={16} className="text-petrol" /> Project documents folder</div>
-                  <input className="input mt-2 font-mono text-xs" value={conn.folder} onChange={(e) => setConn({ ...conn, folder: e.target.value })} placeholder="/path/to/shared/folder" />
-                  <div className="mt-1 font-mono text-[10px] text-muted">read by the Document Agent · scanned files via Nemotron Parse OCR</div>
+                  <input className="input mt-2 font-mono text-xs" value={conn.folder} onChange={(e) => setConn({ ...conn, folder: e.target.value })} placeholder="server folder path (optional)" />
+                  <div className="mt-2"><DocPicker compact /></div>
+                  <div className="mt-1 font-mono text-[10px] text-muted">server path or files from your computer · read by the Document Agent · OCR via Nemotron Parse</div>
                 </div>
                 <Authorize icon={<Mail size={18} />} title="Email connector (procurement inbox)" scope="mail.read (no sending)"
                   on={conn.email} onChange={(v) => setConn({ ...conn, email: v })} />

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Bot, Database, FileSearch, Folder, FolderKanban, Globe, Mail, Send, Sparkles, TrainFront, X, Zap } from "lucide-react";
+import { ArrowRight, Bot, Database, FileSearch, Folder, FolderKanban, Globe, Mail, Send, Sparkles, TrainFront, Zap } from "lucide-react";
 import { api } from "../api";
 import { SiemensLogo, useApp, type Page, type Project } from "../App";
 import { Tag } from "../components/ui";
+import DocPicker from "../components/DocPicker";
 
 type Example = { title: string; hint: string; icon: JSX.Element; tag: string; project: Partial<Project>; page: Page; question?: string; email?: string };
 
@@ -55,11 +56,9 @@ export default function Home() {
   const [q, setQ] = useState("");
   const [name, setName] = useState("");
   const [folder, setFolder] = useState("");
-  const [browse, setBrowse] = useState<any | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { if (app.status?.folder && !folder) setFolder(app.status.folder); }, [app.status]);
-  const openBrowse = async (path?: string) => setBrowse(await api.fs(path ?? folder));
 
   const indexFolder = (f: string) => {
     // document agent reads this folder; extraction (incl. OCR) runs in the background
@@ -105,10 +104,12 @@ export default function Home() {
             </label>
             <label className="flex min-w-[240px] flex-[1.4] items-center gap-1.5 rounded border border-line px-2">
               <Folder size={14} className="text-petrol" />
-              <input className="h-8 w-full font-mono text-xs outline-none" placeholder="Project folder path" value={folder} onChange={(e) => setFolder(e.target.value)} title="Documents in this folder are read by the Document Agent" />
-              <button type="button" className="text-xs font-semibold text-petrol hover:underline" onClick={() => openBrowse()}>Browse</button>
+              <input className="h-8 w-full font-mono text-xs outline-none" placeholder="Server folder path (optional)" value={folder} onChange={(e) => setFolder(e.target.value)} title="Documents in this folder are read by the Document Agent" />
             </label>
             <button className="btn btn-primary !px-5 !py-2" disabled={!q.trim() || busy}><Send size={15} /> Ask</button>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-line pt-2">
+            <span className="text-xs text-muted">Project documents from your computer:</span><DocPicker compact />
           </div>
         </form>
         <div className="mx-auto mt-3 flex max-w-3xl flex-wrap justify-center gap-2">
@@ -158,24 +159,6 @@ export default function Home() {
         </section>
       </div>
 
-      {browse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-ink/40 backdrop-blur-[2px]" onClick={() => setBrowse(null)}>
-          <div className="card w-[640px] max-w-[92vw] p-5" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between"><h3 className="text-lg font-semibold">Choose the project folder</h3>
-              <button onClick={() => setBrowse(null)}><X size={18} /></button></div>
-            <div className="mt-2 rounded bg-canvas p-2 font-mono text-xs">{browse.path}</div>
-            <div className="mt-3 grid max-h-72 grid-cols-2 gap-1 overflow-auto">
-              <button className="btn btn-ghost justify-start" onClick={() => openBrowse(browse.parent)}>.. up</button>
-              {browse.dirs.map((d: string) => (
-                <button key={d} className="btn btn-ghost justify-start truncate" onClick={() => openBrowse(`${browse.path}/${d}`)}><Folder size={14} />{d}</button>))}
-            </div>
-            <p className="mt-3 text-xs text-muted">{browse.file_count} supported files in this folder (incl. subfolders)</p>
-            <div className="mt-3 flex justify-end">
-              <button className="btn btn-primary" onClick={() => { setFolder(browse.path); setBrowse(null); }}>Use this folder</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
