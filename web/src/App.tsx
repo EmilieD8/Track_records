@@ -40,6 +40,7 @@ interface Ctx {
   projectBubbles: any;
   setProjectBubbles: (b: any) => void;
   projects: Project[];
+  saveProjectById: (id: string, patch: Partial<Project>) => void;
   createProject: (p: Partial<Project>, pg?: Page, question?: string) => Promise<void>;
   openProject: (id: string, pg?: Page) => void;
   inbox: Email[];
@@ -91,11 +92,11 @@ export default function App() {
     setInbox(m);
   };
   useEffect(() => {
-    if (!persona) return;
+    if (!persona || (persona as any).connectors?.email === false) { setInbox([]); return; }
     refreshInbox();
     const t = window.setInterval(refreshInbox, 8000);
     return () => window.clearInterval(t);
-  }, [persona?.id]);
+  }, [persona?.id, (persona as any)?.connectors?.email]);
   const unread = inbox.filter((m) => !m.read).length;
 
   const project = projects.find((p) => p.id === activeId) ?? null;
@@ -118,6 +119,18 @@ export default function App() {
     saveTimer.current = window.setTimeout(() => api.saveUserProject(persona.email!, next), 500);
   };
 
+  // used by background work (e.g. a supervisor run) that may finish while another project is open
+  const saveProjectById = (id: string, patch: Partial<Project>) => {
+    if (!persona) return;
+    setProjects((ps) => {
+      const cur = ps.find((x) => x.id === id);
+      if (!cur) return ps;
+      const next = { ...cur, ...patch };
+      api.saveUserProject(persona.email!, next);
+      return ps.map((x) => (x.id === id ? next : x));
+    });
+  };
+
   const updatePersona = async (patch: Partial<Persona>) => {
     if (!persona) return;
     setPersona(await api.savePersona({ ...persona, ...patch }));
@@ -129,10 +142,8 @@ export default function App() {
       setPersona(p);
       const ps = await api.userProjects(p.email!);
       setProjects(ps);
-      if (p.ui_config && p.ui_spec) {
-        setConfig(p.ui_config); setSpec(p.ui_spec);
-        setPage("home");
-      } else setPage("configure");
+      if (p.ui_config && p.ui_spec) { setConfig(p.ui_config); setSpec(p.ui_spec); }
+      setPage("configure");  // always confirm sources, authorisations and model after sign-in
     },
     openSupplier: (id) => { setSupplierId(id); setPage("supplier"); },
     go: setPage,
@@ -144,7 +155,7 @@ export default function App() {
       if (persona) api.savePersona({ ...persona, ui_config: c, ui_spec: s }).then(setPersona);
       setPage("home");
     },
-    project, saveProject, projectBubbles, setProjectBubbles, projects, createProject, openProject, inbox, refreshInbox,
+    project, saveProject, saveProjectById, projectBubbles, setProjectBubbles, projects, createProject, openProject, inbox, refreshInbox,
   };
 
   if (page === "login" || page === "configure" || !persona)

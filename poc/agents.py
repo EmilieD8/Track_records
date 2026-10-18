@@ -143,8 +143,9 @@ def build_system_prompt(persona: dict, sources: dict, notes: str, boundaries: di
 
 
 def run_supervisor(question: str, history: list, persona: dict, notes: str, model: str,
-                   chunks: list | None, web_enabled: bool, run: Run, boundaries: dict | None = None) -> str:
-    sources = {"data": True, "email": True, "docs": len(chunks) if chunks else 0, "web": web_enabled}
+                   chunks: list | None, web_enabled: bool, run: Run, boundaries: dict | None = None,
+                   email_enabled: bool = True) -> str:
+    sources = {"data": True, "email": email_enabled, "docs": len(chunks) if chunks else 0, "web": web_enabled}
     system = build_system_prompt(persona, sources, notes, boundaries)
 
     data_tools_map = data_tools.TOOLS
@@ -155,8 +156,9 @@ def run_supervisor(question: str, history: list, persona: dict, notes: str, mode
                                 {"query": {"type": "string"}, "topic": {"type": "string", "enum": ["general", "news"]},
                                  "max_results": {"type": "integer"}})}
 
-    agents = {"data_task": ("Data Agent", DATA_SYS, data_tools_map, MAX_STEPS),
-              "email_task": ("Email Agent", EMAIL_SYS, email_connector.TOOLS, 4)}
+    agents = {"data_task": ("Data Agent", DATA_SYS, data_tools_map, MAX_STEPS)}
+    if email_enabled:
+        agents["email_task"] = ("Email Agent", EMAIL_SYS, email_connector.TOOLS, 4)
     if sources["docs"]:
         agents["document_task"] = ("Document Agent", DOC_SYS, doc_tools, 3)
     if web_enabled:

@@ -118,13 +118,18 @@ def _grounded(n: float, known: set) -> bool:
     return False
 
 
+BUY = re.compile(r"(buy from|switch (?:orders |volume )?to|recommended supplier|recommend(?:ing)? (?:buying from|ordering from|using)|"
+                 r"award (?:the )?(?:order|contract)? ?to|go with|best (?:alternative|option|supplier)(?: is)?|preferred supplier(?: is)?)", re.I)
+
+
 def _recommended_ids(answer: str) -> set[str]:
+    """Supplier IDs the answer tells the user to buy from: the first ID right after a buy phrase (not 'instead of' / 'away from')."""
     ids = set()
-    for line in answer.splitlines():
-        low = line.lower()
-        if any(w in low for w in ("recommend", "buy from", "switch to", "best alternative", "award", "prefer")) and \
-                not any(w in low for w in ("avoid", "do not", "don't", "not recommend", "exit", "replace")):
-            ids |= set(re.findall(r"SUPP_\d{5}", line))
+    for m in BUY.finditer(answer):
+        window = answer[m.end(): m.end() + 90].split("\n")[0]
+        hit = re.search(r"SUPP_\d{5}", window)
+        if hit and not re.search(r"instead of|away from|rather than|not ", window[: hit.start()], re.I):
+            ids.add(hit.group(0))
     return ids
 
 

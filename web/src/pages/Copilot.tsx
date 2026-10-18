@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Bot, Database, ShieldCheck, FileSearch, Globe, Loader2, Mail, Send, Sparkles, Terminal, Workflow } from "lucide-react";
@@ -41,20 +41,38 @@ function Trace({ events, live }: { events: AgentEvent[]; live?: boolean }) {
   );
 }
 
+// Chat runs live outside the component: a supervisor run keeps streaming when the user switches pages or projects,
+// and the conversation is shown again (with the live trace) when they come back.
+type ChatRun = { msgs: Msg[]; live: AgentEvent[] | null };
+const RUNS = new Map<string, ChatRun>();
+const listeners = new Set<() => void>();
+const updateRun = (key: string, f: (r: ChatRun) => ChatRun) => { RUNS.set(key, f(RUNS.get(key) ?? { msgs: [], live: null })); listeners.forEach((l) => l()); };
+export const runningChats = () => [...RUNS.entries()].filter(([, r]) => r.live).map(([k]) => k);
+
 export default function Copilot() {
   const app = useApp();
-  const [msgs, setMsgs] = useState<Msg[]>(app.project?.copilot ?? []);
+  const key = app.project?.id ?? "none";
+  const [, rerender] = useReducer((x: number) => x + 1, 0);
+  useEffect(() => { listeners.add(rerender); return () => { listeners.delete(rerender); }; }, []);
+  if (!RUNS.has(key)) RUNS.set(key, { msgs: app.project?.copilot ?? [], live: null });
+  const { msgs, live } = RUNS.get(key)!;
+  const setLive = (l: AgentEvent[] | null) => updateRun(key, (r) => ({ ...r, live: l }));
+  const setMsgs = (f: (m: Msg[]) => Msg[]) => {
+    updateRun(key, (r) => ({ ...r, msgs: f(r.msgs) }));
+    // memory: keep the conversation with its project (tool payloads dropped to stay small)
+    const all = RUNS.get(key)!.msgs;
+    if (key !== "none") app.saveProjectById(key, { copilot: all.map((m) => ({ ...m, events: m.events?.map((e) => ({ ...e, data: e.kind === "tool_result" && e.data?.error ? e.data : null })) })) });
+  };
   const [input, setInput] = useState("");
-  const [live, setLive] = useState<AgentEvent[] | null>(null);
   const [prompt, setPrompt] = useState<string | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const p = app.persona;
 
   const body = (question: string) => ({ question, persona_id: p?.id, notes: p?.notes ?? "", model: app.model, provider: app.provider, web: app.web,
-    history: msgs.map((m) => ({ role: m.role, content: m.content })), user: p?.email ?? "" });
+    history: msgs.map((m) => ({ role: m.role, content: m.content })), user: p?.email ?? "", email: (p as any)?.connectors?.email !== false });
 
   const send = async (q: string) => {
-    if (!q.trim() || live) return;
+    if (!q.trim() || RUNS.get(key)?.live) return;
     setInput("");
     setMsgs((m) => [...m, { role: "user", content: q }]);
     const evs: AgentEvent[] = [];
@@ -75,8 +93,6 @@ export default function Copilot() {
 
   useEffect(() => { if (app.pendingQuestion) { const q = app.pendingQuestion; app.clearPending(); send(q); } }, []);
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, live]);
-  // memory: keep the conversation with the project (tool payloads dropped to stay small)
-  useEffect(() => { if (msgs.length && app.project) app.saveProject({ copilot: msgs.map((m) => ({ ...m, events: m.events?.map((e) => ({ ...e, data: e.kind === "tool_result" && e.data?.error ? e.data : null })) })) }); }, [msgs]);
 
   return (
     <div className="flex h-full">

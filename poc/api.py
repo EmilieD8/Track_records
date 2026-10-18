@@ -99,6 +99,7 @@ class Persona(BaseModel):
     notes: str = ""
     seniority: str = ""
     questions: list[str] = []
+    connectors: dict | None = None  # authorised sources: db, email, web, folder
 
 
 class Login(BaseModel):
@@ -278,6 +279,7 @@ class ChatReq(BaseModel):
     web: bool = True
     history: list[dict] = []
     user: str = ""  # email; selects the user's boundaries
+    email: bool = True  # email connector authorised by the user
 
 
 def _persona(pid: str) -> dict:
@@ -324,7 +326,7 @@ def chat(req: ChatReq):
                      f", approval above €{b['approval_threshold_eur']:,.0f}{'' if b['allow_web'] else ', web OFF'}")
             # 2. supervisor with the user's boundaries as hard rules
             ans = run_supervisor(g["text"], req.history, persona, req.notes, req.model, chunks,
-                                 req.web and b["allow_web"] and bool(TAVILY_API_KEY), run, b)
+                                 req.web and b["allow_web"] and bool(TAVILY_API_KEY), run, b, req.email)
             # 3. Validator Agent
             run.emit("Validator Agent", "plan", "Checking grounding, supplier IDs, boundaries, citations, leakage")
             v = gr.validate(req.question, ans, run.events, b)
