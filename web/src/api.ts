@@ -81,6 +81,10 @@ export const api = {
     fd.append("file", file); fd.append("model", model); fd.append("provider", provider);
     return j<any>("/api/procurement/upload", { method: "POST", body: fd });
   },
+  userProjects: (email: string) => j<any[]>(`/api/user-projects?email=${encodeURIComponent(email)}`),
+  saveUserProject: (email: string, project: any) => post<any>("/api/user-projects", { email, project }),
+  deleteUserProject: (email: string, id: string) => j<any>(`/api/user-projects/${id}?email=${encodeURIComponent(email)}`, { method: "DELETE" }),
+  procurementRecs: (items: any[]) => post<any[]>("/api/procurement/recommendations", { items }),
   procurementBubbles: (items: any[], per_item: number, eu_only: boolean) => post<any>("/api/procurement/bubbles", { items, per_item, eu_only }),
   recommendations: (category: string) => j<any[]>(`/api/recommendations?${new URLSearchParams({ category })}`),
   generateUi: (body: any) => post<any>("/api/generate-ui", body),

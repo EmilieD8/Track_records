@@ -345,3 +345,57 @@ def procurement_bubbles(req: BubbleReq):
             children.append({"name": it["item"], "kind": "item", "category": it["category"], "quantity": it.get("quantity"),
                              "needed_by": it.get("needed_by"), "risk": min(s["risk"] for s in sups), "n": len(sups), "children": sups})
     return {"name": "Procurement request", "kind": "root", "children": children}
+
+
+# ---------------------------------------------------------------- user procurement projects (chat memory)
+USER_PROJECTS = ROOT / "data" / "user_projects.json"
+
+
+def _load_up() -> dict:
+    return json.loads(USER_PROJECTS.read_text()) if USER_PROJECTS.exists() else {}
+
+
+@router.get("/user-projects")
+def list_user_projects(email: str):
+    return _load_up().get(email.lower(), [])
+
+
+class UserProject(BaseModel):
+    email: str
+    project: dict
+
+
+@router.post("/user-projects")
+def save_user_project(req: UserProject):
+    allp = _load_up()
+    mine = allp.setdefault(req.email.lower(), [])
+    p = dict(req.project)
+    p.setdefault("id", f"p{int(__import__('time').time() * 1000)}")
+    p.setdefault("created", date.today().isoformat())
+    p["updated"] = date.today().isoformat()
+    allp[req.email.lower()] = [x for x in mine if x["id"] != p["id"]] + [p]
+    USER_PROJECTS.parent.mkdir(parents=True, exist_ok=True)
+    USER_PROJECTS.write_text(json.dumps(allp, indent=2, ensure_ascii=False))
+    return p
+
+
+@router.delete("/user-projects/{pid}")
+def delete_user_project(pid: str, email: str):
+    allp = _load_up()
+    allp[email.lower()] = [x for x in allp.get(email.lower(), []) if x["id"] != pid]
+    USER_PROJECTS.write_text(json.dumps(allp, indent=2, ensure_ascii=False))
+    return {"ok": True}
+
+
+class RecReq(BaseModel):
+    items: list[dict]
+
+
+@router.post("/procurement/recommendations")
+def procurement_recommendations(req: RecReq):
+    """Best supplier per requested item (exact data, no LLM)."""
+    out = []
+    for it in req.items:
+        r = recommendations(it["category"], 3)
+        out.append({"item": it["item"], "category": it["category"], "quantity": it.get("quantity"), **(r[0] if r else {"buy": [], "avoid": []})})
+    return out

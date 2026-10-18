@@ -22,7 +22,7 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
   const [W, setW] = useState(900);
   const H = height;
   useEffect(() => {
-    const ro = new ResizeObserver(([e]) => setW(Math.max(400, e.contentRect.width)));
+    const ro = new ResizeObserver(([e]) => setW(Math.max(300, Math.floor(e.contentRect.width))));
     if (wrap.current) ro.observe(wrap.current);
     return () => ro.disconnect();
   }, []);
@@ -81,8 +81,8 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
           return (
             <g key={`${n.depth}-${n.data.id ?? n.data.name}-${n.parent?.data.name}`} transform={`translate(${tx(n)},${ty(n)})`}
               onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(null)}
-              onClick={(e) => { e.stopPropagation(); if (kind === "factor" || kind === "supplier") return; if (focus !== n) zoomTo(n); }}
-              style={{ cursor: kind === "factor" || kind === "supplier" ? "default" : "zoom-in" }}>
+              onClick={(e) => { e.stopPropagation(); if (kind === "factor") return; if (kind === "supplier") { if (n.parent === focus || n.parent?.data.kind !== "item") onOpenSupplier(n.data.id!); else zoomTo(n.parent as N); return; } if (focus !== n) zoomTo(n); }}
+              style={{ cursor: kind === "factor" ? "default" : kind === "supplier" ? "pointer" : "zoom-in" }}>
               <circle r={r} fill={col} fillOpacity={kind === "item" && n !== focus ? 0.55 : isCat ? 0.13 : kind === "factor" ? 0.85 : 0.82}
                 stroke={isCat ? col : hover === n ? "#0f172a" : "#fff"} strokeOpacity={isCat ? 0.55 : 1} strokeWidth={isCat ? 1.5 : hover === n ? 2 : 1.2} />
               {!isCat && r > 6 && <circle r={r} fill="url(#shine)" pointerEvents="none" />}
@@ -146,7 +146,7 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
             {hover.data.kind === "supplier" && <> · {eur(hover.data.po)} · delivery {hover.data.delivery?.toFixed(0)}%</>}
             {hover.data.kind === "item" && <> · {hover.data.category} · {hover.children?.length} suppliers</>}
             {hover.data.kind === "factor" && <> · weight {Math.round((hover.data.weight ?? 0) * 100)}%</>}</div>
-          <div className="text-muted">{hover.data.kind === "supplier" ? "click the name to open the dashboard" : hover.data.kind === "factor" ? "" : "click to see suppliers"}</div>
+          <div className="text-muted">{hover.data.kind === "supplier" ? "click to open the supplier dashboard" : hover.data.kind === "factor" ? "" : "click to see suppliers"}</div>
         </div>
       )}
 

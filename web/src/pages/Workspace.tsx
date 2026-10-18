@@ -22,26 +22,30 @@ const AFTER_CHIPS = ["Show suppliers", "EU suppliers only", "Add more items"];
 
 export default function Workspace() {
   const app = useApp();
-  const { spec, config, persona } = app;
+  const { spec, config, persona, project } = app;
   const [ov, setOv] = useState<any>(null);
-  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [msgs, setMsgs] = useState<Msg[]>(project?.messages ?? []);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [items, setItems] = useState<Item[]>([]);
-  const [euOnly, setEuOnly] = useState(false);
-  const [perItem, setPerItem] = useState(8);
+  const [items, setItems] = useState<Item[]>(project?.items ?? []);
+  const [euOnly, setEuOnly] = useState(!!project?.eu_only);
+  const [perItem, setPerItem] = useState(project?.per_item ?? config?.per_item ?? 8);
+  const [showed, setShowed] = useState(!!project?.showed);
+  const [allRecs, setAllRecs] = useState<any[]>([]);
   const [data, setData] = useState<PackDatum | null>(null);
   const [focusCat, setFocusCat] = useState("");
-  const [recs, setRecs] = useState<any[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     api.overview().then((r) => setOv(r.overview));
-    setMsgs([{ role: "bot", text: `Hi ${persona?.name.split(" ")[0]}. What do you need to procure? Describe the items (quantity, project, needed-by date) or upload your item list as a PDF.`, chips: START_CHIPS }]);
+    if (!msgs.length)
+      setMsgs([{ role: "bot", text: `Hi ${persona?.name.split(" ")[0]}. What do you need to procure for "${project?.name}"? Describe the items (quantity, needed-by date) or upload your item list as a PDF.`, chips: START_CHIPS }]);
+    else if (showed && items.length) showSuppliers(items, euOnly, false);
   }, []);
+  // chat memory: persist the conversation and the item list with the project
+  useEffect(() => { if (msgs.length) app.saveProject({ messages: msgs, items, eu_only: euOnly, per_item: perItem, showed }); }, [msgs, items, euOnly, perItem, showed]);
   useEffect(() => { bottom.current?.scrollTo({ top: bottom.current.scrollHeight, behavior: "smooth" }); }, [msgs, busy]);
-  useEffect(() => { if (focusCat) api.recommendations(focusCat).then(setRecs); else setRecs([]); }, [focusCat]);
 
   const say = (m: Msg) => setMsgs((x) => [...x, m]);
   const addItems = (found: Item[], source: string) => {
@@ -55,12 +59,13 @@ export default function Workspace() {
     say({ role: "bot", text: `${source} I found ${found.length} item(s):\n${found.map((f) => `• ${f.item}${f.quantity ? ` × ${f.quantity}` : ""} (${f.category}${f.needed_by ? `, by ${f.needed_by}` : ""})`).join("\n")}\n\nAny preference before I look for suppliers?`, chips: AFTER_CHIPS });
   };
 
-  const showSuppliers = async (list = items, eu = euOnly) => {
+  const showSuppliers = async (list = items, eu = euOnly, announce = true) => {
     if (!list.length) return;
     setBusy(true);
-    const b = await api.procurementBubbles(list, perItem, eu);
-    setData(b); setFocusCat(""); setBusy(false);
-    say({ role: "bot", text: `Here are ${b.children.length} item bubbles${eu ? " (EU suppliers only)" : ""}. Click an item to see the suppliers that can deliver it, with their risk score. Click a supplier's name to open its dashboard.` });
+    const [b, r] = await Promise.all([api.procurementBubbles(list, perItem, eu), api.procurementRecs(list)]);
+    setData(b); setAllRecs(r); setFocusCat(""); setBusy(false); setShowed(true);
+    app.setProjectBubbles(b);
+    if (announce) say({ role: "bot", text: `Here are ${b.children.length} item bubbles${eu ? " (EU suppliers only)" : ""}. Click an item to see the suppliers that can deliver it with their risk score; click a supplier to open its dashboard. My recommended supplier for each item is on the right.` });
   };
 
   const handle = async (text: string) => {
@@ -107,7 +112,7 @@ export default function Workspace() {
         </div>
       )}
 
-      <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
+      <div className="grid gap-4 xl:grid-cols-[340px_minmax(0,1fr)_310px]">
         <Card title="What do you need to procure?" icon={<MessagesSquare size={16} />} right={<Tag>Nemotron</Tag>}>
           <div ref={bottom} className="h-[460px] space-y-3 overflow-auto pr-1">
             {msgs.map((m, i) => (
@@ -147,12 +152,12 @@ export default function Workspace() {
           )}
         </Card>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           {has("bubbles") && (
             <Card title="Items → suppliers that can deliver them" icon={<Network size={16} />}
-              right={<span className="font-mono text-[11px] text-muted">click an item · click a supplier name for its dashboard · background = back</span>}>
+              right={<span className="font-mono text-[11px] text-muted">click an item · click a supplier for its dashboard</span>}>
               {data && data.children?.length ? (
-                <ZoomPack data={data} height={560} onOpenSupplier={app.openSupplier}
+                <ZoomPack data={data} height={620} onOpenSupplier={app.openSupplier}
                   onFocus={(n) => setFocusCat(n.data.kind === "item" ? n.data.category! : "")} />
               ) : (
                 <div className="flex h-[560px] flex-col items-center justify-center rounded-md border border-dashed border-line-strong bg-canvas text-center text-muted">
@@ -163,30 +168,47 @@ export default function Workspace() {
             </Card>
           )}
 
-          {has("recommendations") && focusCat && (
-            <Card title={`Recommendation · ${focusCat}`} icon={<ShoppingCart size={16} />} right={<Tag>{spec.recommendation_focus}</Tag>}>
-              {recs.map((r) => (
-                <div key={r.category} className="grid gap-3 md:grid-cols-2">
-                  <div>{r.buy.map((b: any, i: number) => (
-                    <div key={b.id} className="mb-1.5 rounded border border-[#a7f3d0] bg-[#ecfdf5] p-2.5">
-                      <div className="flex items-center justify-between">
-                        <button className="text-left text-sm font-semibold text-petrol hover:underline" onClick={() => app.openSupplier(b.id)}><BadgeCheck size={13} className="mr-1 inline text-low" />{i + 1}. {b.name}</button>
-                        <span className="metric text-lg" style={{ color: riskColor(b.risk) }}>{b.risk}</span></div>
-                      <div className="mt-0.5 text-[11px]">{b.reasons.join(" · ")}</div>
-                    </div>))}</div>
-                  <div>{r.avoid.map((a: any) => (
-                    <div key={a.id} className="mb-1.5 rounded border border-[#fca5a5] bg-[#fef2f2] p-2.5">
-                      <div className="flex items-center justify-between">
-                        <button className="text-left text-sm font-semibold text-crit hover:underline" onClick={() => app.openSupplier(a.id)}><Ban size={12} className="mr-1 inline" />Avoid: {a.name}</button>
-                        <span className="font-mono text-sm font-bold text-crit">{a.risk}</span></div>
-                      <div className="text-[11px] text-crit/80">{a.reason}</div>
-                    </div>))}
-                    {has("copilot") && <button className="btn btn-dark mt-1" onClick={() => app.askCopilot(`Which supplier should I choose for ${focusCat}? Compare the best options with evidence.`)}><Sparkles size={13} /> Ask the agents</button>}
-                  </div>
-                </div>))}
-            </Card>
-          )}
         </div>
+
+        {has("recommendations") && (
+          <section className="card overflow-hidden border-2 border-petrol xl:sticky xl:top-4 xl:self-start">
+            <header className="bg-petrol px-4 py-3 text-white">
+              <div className="flex items-center gap-2 text-lg font-semibold"><ShoppingCart size={18} /> Recommended suppliers</div>
+              <div className="font-mono text-[11px] text-teal-light">{spec.recommendation_focus} · exact risk ranking</div>
+            </header>
+            <div className="max-h-[680px] space-y-3 overflow-auto p-3">
+              {!allRecs.length && <p className="p-2 text-sm text-muted">Tell the assistant what you need. The best supplier for each item will appear here.</p>}
+              {[...allRecs].sort((a, b) => (b.category === focusCat ? 1 : 0) - (a.category === focusCat ? 1 : 0)).map((r) => {
+                const best = r.buy[0];
+                const on = r.category === focusCat;
+                return (
+                  <div key={r.item} className={`rounded-md border p-3 ${on ? "border-petrol bg-tint ring-1 ring-petrol" : "border-line"}`}>
+                    <div className="label">{r.item}{r.quantity ? ` × ${r.quantity}` : ""}</div>
+                    {best ? (
+                      <button onClick={() => app.openSupplier(best.id)} className="mt-1.5 w-full rounded border border-[#a7f3d0] bg-[#ecfdf5] p-2.5 text-left hover:ring-1 hover:ring-low">
+                        <div className="flex items-center justify-between gap-2">
+                          <div><div className="flex items-center gap-1 text-base font-semibold text-petrol-dark"><BadgeCheck size={16} className="text-low" />{best.name}</div>
+                            <div className="font-mono text-[10px] text-muted">{best.id} · {best.country}</div></div>
+                          <div className="text-right"><div className="metric text-3xl" style={{ color: riskColor(best.risk) }}>{best.risk}</div><div className="font-mono text-[9px] text-muted">RISK</div></div>
+                        </div>
+                        <div className="mt-1 text-[11px] text-slate-ink">{best.reasons.join(" · ")}</div>
+                      </button>
+                    ) : <p className="text-xs text-muted">No supplier meets the criteria.</p>}
+                    {on && r.buy.slice(1).map((b: any, i: number) => (
+                      <button key={b.id} onClick={() => app.openSupplier(b.id)} className="mt-1.5 flex w-full items-center justify-between rounded border border-line bg-white px-2.5 py-1.5 text-left text-sm hover:border-petrol">
+                        <span>{i + 2}. {b.name}</span><span className="font-mono font-bold" style={{ color: riskColor(b.risk) }}>{b.risk}</span></button>))}
+                    {r.avoid[0] && (
+                      <button onClick={() => app.openSupplier(r.avoid[0].id)} className="mt-1.5 flex w-full items-center justify-between rounded border border-[#fca5a5] bg-[#fef2f2] px-2.5 py-1.5 text-left text-xs text-crit">
+                        <span><Ban size={12} className="mr-1 inline" />Avoid {r.avoid[0].name}</span><span className="font-mono font-bold">{r.avoid[0].risk}</span></button>)}
+                  </div>
+                );
+              })}
+              {has("copilot") && allRecs.length > 0 && (
+                <button className="btn btn-dark w-full justify-center" onClick={() => app.askCopilot(`For my project "${project?.name}" (${items.map((i) => i.item).join(", ")}): confirm the recommended suppliers with evidence from data, documents and the web.`)}>
+                  <Sparkles size={14} /> Ask the agents to justify</button>)}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

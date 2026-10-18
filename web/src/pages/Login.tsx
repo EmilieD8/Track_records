@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
-import { Check, Loader2, LogIn, ShieldCheck, Sparkles, Train, Wand2 } from "lucide-react";
+import { Check, Loader2, LogIn, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { api } from "../api";
 import { useApp, type UiConfig } from "../App";
 
 const PANELS: { id: string; label: string; hint: string }[] = [
-  { id: "bubbles", label: "Project mind map", hint: "project → items → suppliers → risk" },
+  { id: "bubbles", label: "Item bubbles", hint: "items → suppliers that can deliver them → risk" },
   { id: "recommendations", label: "Buying recommendations", hint: "who to buy from, who to avoid" },
-  { id: "project_risk", label: "Project risk summary", hint: "combined risk of the current suppliers" },
-  { id: "kpis", label: "KPI strip", hint: "spend, exposure, priority, hidden risks" },
+    { id: "kpis", label: "KPI strip", hint: "spend, exposure, priority, hidden risks" },
   { id: "copilot", label: "AI copilot shortcut", hint: "ask the agents about this view" },
 ];
-const STEPS = ["Loading your profile", "Reading the project bill of materials", "Nemotron is designing your layout", "Packing supplier bubbles"];
+const STEPS = ["Loading your profile", "Selecting risk signals for your role", "Nemotron is designing your layout", "Preparing your projects"];
 
 export default function Login({ configure }: { configure: boolean }) {
   const app = useApp();
@@ -18,13 +17,12 @@ export default function Login({ configure }: { configure: boolean }) {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [accounts, setAccounts] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [cfg, setCfg] = useState<UiConfig>({ project: "RegioFlex EMU", per_item: 8, panels: PANELS.map((p) => p.id) });
+  const [cfg, setCfg] = useState<UiConfig>({ per_item: 8, panels: PANELS.map((p) => p.id) });
   const [gen, setGen] = useState(-1);
   const p = app.persona;
 
-  useEffect(() => { api.demoAccounts().then(setAccounts); api.projects().then(setProjects); }, []);
-  useEffect(() => { if (p?.ui_config?.project) setCfg(p.ui_config); }, [p?.id]);
+  useEffect(() => { api.demoAccounts().then(setAccounts); }, []);
+  useEffect(() => { if (p?.ui_config) setCfg({ per_item: p.ui_config.per_item ?? 8, panels: p.ui_config.panels ?? PANELS.map((x) => x.id) }); }, [p?.id]);
 
   const signIn = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -79,18 +77,8 @@ export default function Login({ configure }: { configure: boolean }) {
           {configure && p && (
             <>
               <div className="label">Configure your UI</div>
-              <h2 className="mt-1 text-2xl font-semibold">Hi {p.name.split(" ")[0]}, which project are you buying for?</h2>
+              <h2 className="mt-1 text-2xl font-semibold">Hi {p.name.split(" ")[0]}, how should your workspace look?</h2>
               <p className="text-sm text-muted">{p.role} · {p.department}</p>
-              <div className="mt-5 space-y-2">
-                {projects.map((x) => (
-                  <button key={x.id} onClick={() => setCfg({ ...cfg, project: x.id })}
-                    className={`flex w-full items-center gap-3 rounded-md border p-3 text-left ${cfg.project === x.id ? "border-petrol bg-tint ring-1 ring-petrol" : "border-line hover:border-line-strong"}`}>
-                    <Train size={20} className="text-petrol" />
-                    <div className="flex-1"><div className="font-semibold">{x.name}</div><div className="font-mono text-xs text-muted">{x.trainsets} trainsets · {x.items} items in the bill of materials</div></div>
-                    {cfg.project === x.id && <Check size={18} className="text-petrol" />}
-                  </button>))}
-                <p className="text-[11px] text-muted">Projects and bills of materials are SIMULATED.</p>
-              </div>
               <div className="mt-5 grid gap-5 sm:grid-cols-2">
                 <div><div className="label mb-1">Suppliers shown per item: {cfg.per_item}</div>
                   <input type="range" min={3} max={15} value={cfg.per_item} onChange={(e) => setCfg({ ...cfg, per_item: +e.target.value })} className="w-full accent-[#00646e]" /></div>

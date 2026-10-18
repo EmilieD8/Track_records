@@ -25,11 +25,11 @@ export default function SupplierDive() {
     const out: typeof groups = [];
     const pri = api.suppliers({ priority_only: "true", n: "20" }).then((r) =>
       out.push({ label: "Priority suppliers (portfolio)", items: r.suppliers.map((s) => ({ id: s.supplier_id, name: s.name, risk: s.total_risk })) }));
-    const proj = app.config ? api.bubbles(app.config.project, app.config.per_item).then((b) => {
-      for (const it of b.children) out.unshift({ label: `${b.name} · ${it.name}`, items: it.children.map((s: any) => ({ id: s.id, name: s.name, risk: s.risk })) });
-    }) : Promise.resolve();
+    const b = app.projectBubbles;
+    if (b) for (const it of [...b.children].reverse()) out.unshift({ label: `${app.project?.name ?? "Project"} · ${it.name}`, items: it.children.map((s: any) => ({ id: s.id, name: s.name, risk: s.risk })) });
+    const proj = Promise.resolve();
     Promise.all([pri, proj]).then(() => setGroups([...out]));
-  }, [app.config?.project]);
+  }, [app.projectBubbles]);
 
   useEffect(() => {
     setS(null); setWi(null);

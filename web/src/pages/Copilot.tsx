@@ -39,7 +39,7 @@ function Trace({ events, live }: { events: AgentEvent[]; live?: boolean }) {
 
 export default function Copilot() {
   const app = useApp();
-  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [msgs, setMsgs] = useState<Msg[]>(app.project?.copilot ?? []);
   const [input, setInput] = useState("");
   const [live, setLive] = useState<AgentEvent[] | null>(null);
   const [prompt, setPrompt] = useState<string | null>(null);
@@ -70,6 +70,8 @@ export default function Copilot() {
 
   useEffect(() => { if (app.pendingQuestion) { const q = app.pendingQuestion; app.clearPending(); send(q); } }, []);
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, live]);
+  // memory: keep the conversation with the project (tool payloads dropped to stay small)
+  useEffect(() => { if (msgs.length && app.project) app.saveProject({ copilot: msgs.map((m) => ({ ...m, events: m.events?.map((e) => ({ ...e, data: e.kind === "tool_result" && e.data?.error ? e.data : null })) })) }); }, [msgs]);
 
   return (
     <div className="flex h-full">
