@@ -20,13 +20,16 @@ export default function Login({ configure }: { configure: boolean }) {
   const [gen, setGen] = useState(-1);
   const p = app.persona;
 
-  useEffect(() => { api.demoAccounts().then(setAccounts); }, []);
+  // demo: pre-fill the first profile so "Sign in" works without typing
+  useEffect(() => { api.demoAccounts().then((all) => {
+    const a = [...all].sort((x, y) => Number(y.email.startsWith("lena")) - Number(x.email.startsWith("lena"))); // demo persona first
+    setAccounts(a); if (a[0]) { setEmail((e) => e || a[0].email); setPassword((x) => x || "demo"); } }); }, []);
   useEffect(() => { if (p?.ui_config) setCfg({ per_item: p.ui_config.per_item ?? 8, panels: p.ui_config.panels ?? PANELS.map((x) => x.id) }); }, [p?.id]);
 
-  const signIn = async (e?: React.FormEvent) => {
+  const signIn = async (e?: React.FormEvent, as = email) => {
     e?.preventDefault();
     setErr("");
-    try { app.signIn(await api.login(email)); } catch { setErr("Unknown account. Use one of the demo accounts below."); }
+    try { app.signIn(await api.login(as)); } catch { setErr("Unknown account. Use one of the demo accounts below."); }
   };
 
   const generate = async () => {
@@ -59,18 +62,28 @@ export default function Login({ configure }: { configure: boolean }) {
             <form onSubmit={signIn}>
               <div className="flex items-center justify-between"><div className="label">Sign in</div><SiemensLogo className="h-4" /></div>
               <h2 className="mt-1 text-2xl font-semibold">Welcome to SupplyGuard</h2>
-              <label className="mt-6 block"><span className="label">Work email</span>
-                <input className="input mt-1" type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="firstname.lastname@railco.eu" /></label>
+              <div className="label mb-2 mt-5">Choose your profile · one click</div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {accounts.map((a) => (
+                  <button type="button" key={a.email} onClick={() => signIn(undefined, a.email)}
+                    className="group flex items-center gap-3 rounded-md border border-line p-3 text-left transition hover:border-petrol hover:bg-tint">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-petrol font-semibold text-white">{a.name[0]}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold">{a.name}</div>
+                      <div className="truncate text-[11px] text-muted">{a.role}</div>
+                      <div className="truncate font-mono text-[10px] text-muted">{a.email}</div>
+                    </div>
+                    <LogIn size={15} className="shrink-0 text-muted group-hover:text-petrol" />
+                  </button>))}
+              </div>
+              <div className="mt-5 flex items-center gap-3 text-[11px] text-muted"><span className="h-px flex-1 bg-line" />or sign in with email<span className="h-px flex-1 bg-line" /></div>
+              <label className="mt-3 block"><span className="label">Work email</span>
+                <input className="input mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="firstname.lastname@railco.eu" /></label>
               <label className="mt-3 block"><span className="label">Password</span>
                 <input className="input mt-1" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="any value in this demo" /></label>
               {err && <div className="mt-2 text-sm text-crit">{err}</div>}
               <button className="btn btn-primary mt-5 w-full justify-center !py-2.5" disabled={!email}><LogIn size={16} /> Sign in</button>
-              <div className="mt-6 rounded bg-canvas p-3">
-                <div className="label mb-1.5">Demo accounts (prototype: no real authentication)</div>
-                {accounts.map((a) => (
-                  <button type="button" key={a.email} onClick={() => setEmail(a.email)} className="flex w-full justify-between py-0.5 text-left font-mono text-[11px] hover:text-petrol">
-                    <span>{a.email}</span><span className="text-muted">{a.role}</span></button>))}
-              </div>
+              <p className="mt-3 text-center font-mono text-[10px] text-muted">Prototype: no real authentication</p>
             </form>
           )}
 
