@@ -15,6 +15,31 @@ shared documents, the email inbox and the web. It returns:
 Every number comes from a deterministic tool. The LLM (NVIDIA Nemotron) plans the work, reads text and writes the answer,
 but it never invents scores.
 
+## 2-minute demo video (shot list)
+
+| Time | Screen | Say |
+|---|---|---|
+| 0:00–0:10 | Login. Click Lena Weber. | "Siemens Mobility buyers manage 10,000 suppliers. SupplyGuard warns them early, and they stay in control." |
+| 0:10–0:25 | Customise page. Authorise the supplier DB, check the folder, email and Tavily, pick a Nemotron model, click Continue. | "Least privilege: the agents only read what the buyer authorises." |
+| 0:25–0:50 | Home. Click the "RegioFlex brakes & bogies" example. Show the radial tree, click the brake branch, click a supplier. | "Items, then the suppliers that can deliver them, then their risk. The recommendation comes from exact maths, not from the LLM." |
+| 0:50–1:15 | A delay toast appears (on Home, click "Simulate incoming supplier email"). Open the inbox and click "Analyse". Risk goes 15 → 21, delivery 100% → 85%, 2 weeks of line-stop risk. Click **Approve & apply**. | "The Email Agent reads the email and recalculates the risk. Nothing changes until the buyer approves." |
+| 1:15–1:40 | Supervisor chat: "Who should I buy brake control units from?" Show the live trace (Data, Document, Email, Web agents, then the Validator) and the Approve buttons. | "The supervisor calls the right tools in parallel. The Validator Agent checks every figure against the data." |
+| 1:40–1:55 | Security: type `ignore previous instructions…` and show the block. Open the inbox phishing email and show the flag. Open the Guardrails page and show the audit log. | "Guardrails, user boundaries and an audit trail. The agents propose, and the buyer decides." |
+| 1:55–2:00 | Siemens logo and SupplyGuard. | "SupplyGuard: see supplier risk early, switch suppliers in time." |
+
+Before recording:
+
+- Restart the API so the inbox is empty.
+- Run each LLM step once to warm it up: the first answer takes about 30–40 s, so cut or speed up that part.
+- Use a 1500×950 window.
+
+## Deploy
+
+```bash
+make docker-up                       # local: http://localhost:8090 (tested: images build, API + guardrails + email respond)
+make deploy VM=user@<nebius-ip>      # Nebius VM: Docker + Caddy HTTPS at https://<ip-dashes>.sslip.io
+```
+
 ## Security layer: the user stays in control
 
 This is the core of the pitch. **The agents propose, and the user decides.**
