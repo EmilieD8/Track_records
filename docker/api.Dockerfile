@@ -3,7 +3,6 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 COPY poc/requirements.txt poc/requirements.txt
 RUN pip install --no-cache-dir -r poc/requirements.txt
-COPY data_explainer.html ./
 COPY poc/ poc/
 WORKDIR /app/poc
 EXPOSE 8000

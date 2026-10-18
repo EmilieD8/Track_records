@@ -1,7 +1,8 @@
 """Generate the 3 demo project BOM PDFs from supplier_risk_dataset.csv (needs google-chrome)."""
 import csv, random, subprocess, pathlib, html, tempfile
-ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = ROOT/'demo_docs'; TMP = pathlib.Path(tempfile.mkdtemp())
+HERE = pathlib.Path(__file__).resolve().parent            # poc/sample_docs/demo_docs
+ROOT = HERE.parents[2]                                     # repo root
+OUT = HERE; TMP = pathlib.Path(tempfile.mkdtemp())
 sup = {r['supplierID']: r['Supplier Name'] for r in csv.DictReader(open(ROOT/'poc'/'data'/'supplier_risk_dataset.csv'))}
 rng = random.Random(42); ids = sorted(sup)
 

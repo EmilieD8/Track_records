@@ -7,5 +7,5 @@ cd "$(dirname "$0")/../.."
 
 ssh "$TARGET" 'mkdir -p ~/supplyguard'
 rsync -az --delete --exclude .git --exclude .venv --exclude node_modules --exclude web/dist --exclude .cache \
-  --exclude __pycache__ --exclude poc/data/web_raw --exclude UI_first_draft ./ "$TARGET:~/supplyguard/"
+  --exclude __pycache__ --exclude poc/data/web_raw --exclude docs ./ "$TARGET:~/supplyguard/"
 ssh "$TARGET" "AUTH_USER='${AUTH_USER:-demo}' AUTH_PASS='${AUTH_PASS:-supplyguard2026}' bash ~/supplyguard/poc/deploy/setup_vm.sh"

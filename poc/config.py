@@ -8,7 +8,6 @@ load_dotenv(ROOT / ".env")
 load_dotenv(ROOT.parent / ".env")
 
 DATASET_PATH = Path(os.getenv("DATASET_PATH", ROOT / "data" / "supplier_risk_dataset.csv"))
-EXPLAINER_PATH = ROOT.parent / "data_explainer.html"
 # Vercel functions only have a writable /tmp (ephemeral); everything the app saves goes under STATE_DIR.
 STATE_DIR = Path("/tmp/supplyguard") if os.getenv("VERCEL") else ROOT
 CACHE_DIR = STATE_DIR / ".cache"

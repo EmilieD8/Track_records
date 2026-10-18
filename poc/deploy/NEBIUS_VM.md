@@ -1,45 +1,44 @@
-# Deploy SwitchPoint on a Nebius VM
+# Deploy SupplyGuard on a Nebius VM
 
-The app only calls APIs (Nebius Token Factory, NVIDIA build.nvidia.com, Tavily), so it needs **no GPU**.
-A small CPU VM is enough and costs very little.
+The app only calls APIs (Nebius Token Factory, NVIDIA build.nvidia.com, Tavily), so it needs **no GPU**. A small CPU VM is
+enough.
 
-## 1. Create the VM (web console, ~5 min)
-1. console.nebius.com → **Compute → Virtual machines → Create resource**.
-2. Pick **Without GPU** with these settings:
-   - Platform: **Non-GPU AMD EPYC Genoa (`cpu-d3`)**
-   - Preset: **`4vcpu-16gb`** (`2vcpu-8gb` also works)
-   - Region: **eu-north1** (Finland) or **eu-west1** (Paris)
-3. **Boot disk:** Ubuntu 24.04 (the image *without* GPU drivers), 30–50 GiB.
-4. **Network:** default subnet. Set **Public IP address = Auto (dynamic)**.
-5. **Access:** add your SSH public key (`cat ~/.ssh/id_ed25519.pub`). Set the username to e.g. `switchpoint`; avoid `root` and `admin`.
-6. **Create VM.** Then copy its public IP.
+## 1. Create the VM
 
-CLI alternative, after `nebius` CLI login (check the image family name in the console):
+In console.nebius.com, go to **Compute → Virtual machines → Create**:
+
+- **Platform:** Non-GPU AMD EPYC Genoa (`cpu-d3`), preset `4vcpu-16gb`
+- **Boot disk:** Ubuntu 24.04, 30–64 GiB
+- **Network:** public IP set to Auto
+- **Access:** a username (e.g. `ubuntu`) plus your SSH public key (`cat ~/.ssh/id_ed25519.pub`)
+- **Security group:** allow inbound TCP **22**, **80** and **443**. Caddy needs 80 and 443 for the HTTPS certificate.
+
+## 2. Deploy (from your laptop, repo root)
+
 ```bash
-nebius compute instance create --name switchpoint \
-  --resources-platform cpu-d3 --resources-preset 4vcpu-16gb \
-  --boot-disk-managed-disk-source-image-family-image-family ubuntu24.04-driverless \
-  --boot-disk-managed-disk-size-gibibytes 40 \
-  --network-interfaces "[{\"subnet_id\": \"$SUBNET_ID\", \"public_ip_address\": {}}]"
+make deploy VM=<user>@<public-ip>
 ```
 
-## 2. Deploy (one command, from your laptop)
-```bash
-cd Track_records/poc
-chmod +x deploy/*.sh
-./deploy/deploy.sh switchpoint@<PUBLIC_IP>
-```
-This does four things:
-- copies the code, dataset, data guide and `.env` to the VM;
-- installs Python dependencies;
-- starts the app as a systemd service;
-- puts Caddy in front with automatic HTTPS at **https://<ip-with-dashes>.sslip.io**. That link goes in the submission.
+The script does this:
 
-If the page doesn't load:
-- **Security group:** check that it allows inbound TCP **80** and **443**. Caddy needs both for the certificate.
-- **Logs:** `ssh switchpoint@<IP> journalctl -u switchpoint -f`.
+1. Copies the repo and `poc/.env` to `~/supplyguard` on the VM with rsync. It skips `.git`, `.venv` and `node_modules`.
+2. Installs Docker and runs `docker compose up -d --build`. That starts the API container and the nginx + React build
+   container. The web container listens on `127.0.0.1:8090` only.
+3. Installs Caddy as the HTTPS entry point at **https://\<ip-with-dashes\>.sslip.io**, behind a demo password.
 
-To redeploy after a code change, run the same `deploy.sh` command again.
+The demo login is `demo` / `supplyguard2026`. To change it, run
+`AUTH_USER=x AUTH_PASS=y make deploy VM=...`.
 
-## 3. When would a GPU VM make sense?
-Only to **self-host** the NVIDIA models, e.g. Nemotron or Nemotron Parse as a NIM container on a `1gpu-16vcpu-200gb` H100/L40S preset. It's a strong *pitch* point ("runs fully on-prem for critical infrastructure"), but it isn't needed today. The serverless APIs are faster to set up and cheaper.
+To redeploy after a change, run the same command again. On startup, the API indexes `poc/sample_docs` (including
+`demo_docs/`).
+
+## 3. Troubleshooting
+
+- **The page doesn't load:** check that the security group allows 80 and 443.
+- **Logs:** `ssh <user>@<ip> 'cd supplyguard && sudo docker compose logs -f'`
+- **SSH `Permission denied (publickey)`:** the username, or the key on the VM, doesn't match.
+
+## When would a GPU VM make sense?
+
+Only to **self-host** the NVIDIA models, for example Nemotron or Nemotron Parse as a NIM container on an H100 or L40S preset.
+It's a strong on-premises story for critical infrastructure, but the serverless APIs are faster to set up and cheaper.
