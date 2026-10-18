@@ -6,6 +6,9 @@ import { Tag } from "../components/ui";
 
 type Example = { title: string; hint: string; icon: JSX.Element; tag: string; project: Partial<Project>; page: Page; question?: string; email?: string };
 
+// open examples straight in the results phase of the request workspace
+const RESULTS = { phase: "results", step: "ready", priority: "Lowest risk" } as Partial<Project>;
+
 const bot = (text: string) => [{ role: "bot", text, chips: ["Show suppliers", "EU suppliers only", "Add more items"] }];
 
 const EXAMPLES: Example[] = [
@@ -13,7 +16,7 @@ const EXAMPLES: Example[] = [
     title: "RegioFlex EMU · brakes & bogies 2027", tag: "Items → suppliers", icon: <TrainFront size={18} />, page: "workspace",
     hint: "240 brake control units and 480 bogie frames for March 2027, with supplier risk per item.",
     project: {
-      name: "RegioFlex brakes & bogies 2027", showed: true,
+      name: "RegioFlex brakes & bogies 2027", showed: true, ...RESULTS,
       items: [{ item: "Brake control unit BCU-7", category: "Brake systems", quantity: 240, needed_by: "2027-03" },
         { item: "Bogie frame", category: "Bogies & wheelsets", quantity: 480, needed_by: "2027-03" }],
       messages: bot("Example project loaded: 2 items for RegioFlex. The supplier tree is on the right."),
@@ -23,7 +26,7 @@ const EXAMPLES: Example[] = [
     title: "ICX-300 · doors, HVAC & traction", tag: "Items → suppliers", icon: <TrainFront size={18} />, page: "workspace",
     hint: "Door drive units, HVAC roof units and traction converters for the high-speed fleet.",
     project: {
-      name: "ICX-300 doors, HVAC & traction", showed: true,
+      name: "ICX-300 doors, HVAC & traction", showed: true, ...RESULTS,
       items: [{ item: "Door drive unit DDU-4", category: "Doors & access systems", quantity: 960 },
         { item: "HVAC roof unit", category: "HVAC", quantity: 120 },
         { item: "Traction converter", category: "Traction & propulsion", quantity: 60 }],
@@ -34,7 +37,7 @@ const EXAMPLES: Example[] = [
     title: "Supplier delay alert by email", tag: "Email connector", icon: <Mail size={18} />, page: "inbox", email: "brake_delay",
     hint: "Your recommended brake supplier emails a 6-week delay. The agent reads it and recalculates the risk.",
     project: {
-      name: "RegioFlex brakes (delay alert demo)", showed: true,
+      name: "RegioFlex brakes (delay alert demo)", showed: true, ...RESULTS,
       items: [{ item: "Brake control unit BCU-7", category: "Brake systems", quantity: 240, needed_by: "2027-03" }],
       messages: bot("Example project loaded: brake control units for RegioFlex."),
     },

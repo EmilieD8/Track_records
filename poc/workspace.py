@@ -75,9 +75,11 @@ def bubbles(project: str, per_item: int = 8):
 
 # ---------------------------------------------------------------- recommendations
 @router.get("/recommendations")
-def recommendations(category: str = "", n: int = 3):
+def recommendations(category: str = "", n: int = 3, eu_only: bool = False):
     from email_connector import DISRUPTED
     d = dt.df()
+    if eu_only:
+        d = d[d.country.isin(EU)]
     cats = [category] if category else sorted(d.category.unique())
     out = []
     for cat in cats:
@@ -332,11 +334,38 @@ class BubbleReq(BaseModel):
     items: list[dict]
     per_item: int = 8
     eu_only: bool = False
+    priority: str = "Lowest risk"
+
+
+def _rank(sups: list[dict], priority: str) -> list[dict]:
+    """Recommend only acceptable suppliers (risk < 50 when available); the chat priority adjusts the score,
+    it never overrides risk. Lower score = better."""
+    ok = [s for s in sups if s["risk"] < 50 and not s.get("alert")] or sorted(sups, key=lambda s: s["risk"])[:3]
+    if priority == "Delivery reliability":
+        score = lambda s: s["risk"] - 2.0 * (s["delivery"] - 90)
+    elif priority == "Proven high volume":
+        score = lambda s: s["risk"] - 8.0 * np.log10(max(s["po"], 1e5) / 1e6)
+    else:
+        score = lambda s: s["risk"] - 0.3 * (s["delivery"] - 90)
+    return sorted(ok, key=score)
+
+
+def _reasons(s: dict, priority: str) -> list[str]:
+    out = [f"risk {s['risk']} ({s['level']})", f"delivery {s['delivery']:.0f}%"]
+    if s["iris"]:
+        out.append("IRIS certified")
+    if s["worst_score"] < 75:
+        out.append("no Critical sub-score")
+    else:
+        out.append(f"watch {s['worst']} ({s['worst_score']})")
+    out.append(f"handles €{s['po'] / 1e6:.1f}M/yr")
+    return out
 
 
 @router.post("/procurement/bubbles")
 def procurement_bubbles(req: BubbleReq):
-    """Root -> one bubble per requested item -> suppliers that can deliver it (name + risk)."""
+    """Root -> one bubble per requested item -> suppliers that can deliver it (name + risk).
+    Recommendations are ranked ONLY among the suppliers shown in that item's bubble."""
     from email_connector import DISRUPTED
     d = dt.df()
     children = []
@@ -346,15 +375,28 @@ def procurement_bubbles(req: BubbleReq):
             pool = pool[pool.country.isin(EU)]
         pool = pool.nlargest(max(3, req.per_item), dt.PO)  # proven volume = can deliver
         sups = [{"name": r["Supplier Name"], "id": r.supplierID, "kind": "supplier", "risk": int(r[dt.T]), "value": _size(r[dt.T]),
-                 "po": float(r[dt.PO]), "delivery": float(r[dt.DELIV]), "country": r.country} for _, r in pool.iterrows()]
+                 "po": float(r[dt.PO]), "delivery": float(r[dt.DELIV]), "country": r.country, "level": r[f"{dt.T}_Level"],
+                 "worst": r.worst_factor, "worst_score": int(r.max_sub), "iris": bool(r.iris_certified)} for _, r in pool.iterrows()]
         for s in sups:  # suppliers with an analysed disruption email carry the recalculated values
             if s["id"] in DISRUPTED:
                 x = DISRUPTED[s["id"]]
-                s.update(risk=x["risk_after"], value=_size(x["risk_after"]), delivery=x["delivery_after"], alert=f"{x['delay_weeks']}-week delay reported")
-        if sups:
-            children.append({"name": it["item"], "kind": "item", "category": it["category"], "quantity": it.get("quantity"),
-                             "needed_by": it.get("needed_by"), "risk": min(s["risk"] for s in sups), "n": len(sups), "children": sups})
-    return {"name": "Procurement request", "kind": "root", "children": children}
+                s.update(risk=x["risk_after"], value=_size(x["risk_after"]), delivery=x["delivery_after"], level=dt.level(x["risk_after"]),
+                         alert=f"{x['delay_weeks']}-week delay reported")
+        if not sups:
+            continue
+        ranked = _rank(sups, req.priority)
+        best = ranked[0]["id"]
+        for s in sups:
+            s["recommended"] = s["id"] == best
+        worst = max(sups, key=lambda s: s["risk"])
+        rec = {"buy": [{**{k: s[k] for k in ("id", "name", "risk", "country", "delivery")}, "reasons": _reasons(s, req.priority)} for s in ranked[:3]],
+               "avoid": [{"id": worst["id"], "name": worst["name"], "risk": worst["risk"],
+                          "reason": f"{worst['worst']} {worst['worst_score']}, delivery {worst['delivery']:.0f}%"}] if worst["risk"] >= 60 else []}
+        children.append({"name": it["item"], "kind": "item", "category": it["category"], "quantity": it.get("quantity"),
+                         "needed_by": it.get("needed_by"), "risk": ranked[0]["risk"], "n": len(sups),
+                         "recommended_name": ranked[0]["name"],
+                         "recommendation": rec, "children": sups})
+    return {"name": "Procurement request", "kind": "root", "priority": req.priority, "children": children}
 
 
 # ---------------------------------------------------------------- user procurement projects (chat memory)
@@ -365,9 +407,48 @@ def _load_up() -> dict:
     return json.loads(USER_PROJECTS.read_text()) if USER_PROJECTS.exists() else {}
 
 
+def _bot(text, chips=None):
+    return {"role": "bot", "text": text, **({"chips": chips} if chips else {})}
+
+
+DEMO_PROJECTS = {"lena.weber@railco.eu": [
+    {"id": "demo-regioflex", "name": "RegioFlex brakes & bogies 2027", "created": "2026-10-14", "phase": "results", "showed": True,
+     "step": "ready", "eu_only": True, "priority": "Lowest risk", "per_item": 8,
+     "items": [{"item": "Brake control unit BCU-7", "category": "Brake systems", "quantity": 240, "needed_by": "2027-03"},
+               {"item": "Bogie frame (motor)", "category": "Bogies & wheelsets", "quantity": 480, "needed_by": "2027-04"},
+               {"item": "Door drive unit DDU-4", "category": "Doors & access systems", "quantity": 960, "needed_by": "2027-05"}],
+     "messages": [
+         _bot('Hi Lena, let\'s set up "RegioFlex brakes & bogies 2027".\n\nWhat kind of items do you want to buy for this project? Describe them or upload your item list as a PDF.'),
+         {"role": "user", "text": "240 brake control units, 480 motor bogie frames and 960 door drive units for RegioFlex, needed March to May 2027"},
+         _bot("I found 3 item(s):\n• Brake control unit BCU-7 × 240 (Brake systems, by 2027-03)\n• Bogie frame (motor) × 480 (Bogies & wheelsets, by 2027-04)\n• Door drive unit DDU-4 × 960 (Doors & access systems, by 2027-05)\n\nAny sourcing constraints, for example supplier location?"),
+         {"role": "user", "text": "EU suppliers only"},
+         _bot("Noted. What matters most when choosing between suppliers?"),
+         {"role": "user", "text": "Lowest risk"},
+         _bot("Thanks. Summary of the request:\n• 3 item(s): Brake control unit BCU-7, Bogie frame (motor), Door drive unit DDU-4\n• Suppliers: EU only\n• Priority: lowest risk\n\nI can now look up which suppliers can deliver each item and assess their risk.", ["Build dashboards", "Add more items"])]},
+    {"id": "demo-icx300", "name": "ICX-300 signalling & traction upgrade", "created": "2026-10-16", "phase": "results", "showed": True,
+     "step": "ready", "eu_only": False, "priority": "Delivery reliability", "per_item": 8,
+     "items": [{"item": "ETCS onboard unit", "category": "Signalling & ETCS", "quantity": 60, "needed_by": "2027-02"},
+               {"item": "Traction converter", "category": "Traction & propulsion", "quantity": 120, "needed_by": "2027-06"},
+               {"item": "HVAC roof unit", "category": "HVAC", "quantity": 120, "needed_by": "2027-06"}],
+     "messages": [
+         _bot('Hi Lena, let\'s set up "ICX-300 signalling & traction upgrade".\n\nWhat kind of items do you want to buy for this project? Describe them or upload your item list as a PDF.'),
+         {"role": "user", "text": "Uploaded: procurement_request_ICX300.pdf"},
+         _bot("I read procurement_request_ICX300.pdf (NVIDIA OCR). I found 3 item(s):\n• ETCS onboard unit × 60 (Signalling & ETCS, by 2027-02)\n• Traction converter × 120 (Traction & propulsion, by 2027-06)\n• HVAC roof unit × 120 (HVAC, by 2027-06)\n\nAny sourcing constraints, for example supplier location?"),
+         {"role": "user", "text": "No location constraint"},
+         _bot("Noted. What matters most when choosing between suppliers?"),
+         {"role": "user", "text": "Delivery reliability"},
+         _bot("Thanks. Summary of the request:\n• 3 item(s): ETCS onboard unit, Traction converter, HVAC roof unit\n• Suppliers: any location\n• Priority: delivery reliability\n\nI can now look up which suppliers can deliver each item and assess their risk.", ["Build dashboards", "Add more items"])]},
+]}
+
+
+def _mine(allp: dict, email: str) -> list:
+    import copy
+    return allp[email] if email in allp else copy.deepcopy(DEMO_PROJECTS.get(email, []))
+
+
 @router.get("/user-projects")
 def list_user_projects(email: str):
-    return _load_up().get(email.lower(), [])
+    return _mine(_load_up(), email.lower())
 
 
 class UserProject(BaseModel):
@@ -378,7 +459,7 @@ class UserProject(BaseModel):
 @router.post("/user-projects")
 def save_user_project(req: UserProject):
     allp = _load_up()
-    mine = allp.setdefault(req.email.lower(), [])
+    mine = _mine(allp, req.email.lower())
     p = dict(req.project)
     p.setdefault("id", f"p{int(__import__('time').time() * 1000)}")
     p.setdefault("created", date.today().isoformat())
@@ -392,13 +473,14 @@ def save_user_project(req: UserProject):
 @router.delete("/user-projects/{pid}")
 def delete_user_project(pid: str, email: str):
     allp = _load_up()
-    allp[email.lower()] = [x for x in allp.get(email.lower(), []) if x["id"] != pid]
+    allp[email.lower()] = [x for x in _mine(allp, email.lower()) if x["id"] != pid]
     USER_PROJECTS.write_text(json.dumps(allp, indent=2, ensure_ascii=False))
     return {"ok": True}
 
 
 class RecReq(BaseModel):
     items: list[dict]
+    eu_only: bool = False
 
 
 @router.post("/procurement/recommendations")
@@ -406,6 +488,6 @@ def procurement_recommendations(req: RecReq):
     """Best supplier per requested item (exact data, no LLM)."""
     out = []
     for it in req.items:
-        r = recommendations(it["category"], 3)
+        r = recommendations(it["category"], 3, req.eu_only)
         out.append({"item": it["item"], "category": it["category"], "quantity": it.get("quantity"), **(r[0] if r else {"buy": [], "avoid": []})})
     return out

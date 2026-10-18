@@ -18,8 +18,8 @@ type Leaf = { s: PackDatum; g: number; a: number; r: number; x: number; y: numbe
 const T = "transform .65s cubic-bezier(.4,0,.2,1), opacity .45s, d .65s cubic-bezier(.4,0,.2,1)";
 const deg = (a: number) => (a * 180) / Math.PI;
 
-export default function RadialTree({ data, onOpenSupplier, height = 640 }: {
-  data: PackDatum; onOpenSupplier: (id: string) => void; height?: number;
+export default function RadialTree({ data, onOpenSupplier, onFocus, height = 640 }: {
+  data: PackDatum; onOpenSupplier: (id: string) => void; onFocus?: (itemName: string) => void; height?: number;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
   const [W, setW] = useState(900);
@@ -33,6 +33,7 @@ export default function RadialTree({ data, onOpenSupplier, height = 640 }: {
     return () => ro.disconnect();
   }, []);
   useEffect(() => setFocus(null), [data]);
+  useEffect(() => onFocus?.(focus == null ? "" : data.children?.[focus]?.name ?? ""), [focus]);
 
   const groups = data.children ?? [];
   const color = (g: number) => SERIES[g % SERIES.length];

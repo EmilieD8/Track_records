@@ -6,8 +6,7 @@ import { SiemensLogo, useApp, type UiConfig } from "../App";
 const PANELS: { id: string; label: string; hint: string }[] = [
   { id: "bubbles", label: "Item bubbles", hint: "items → suppliers that can deliver them → risk" },
   { id: "recommendations", label: "Buying recommendations", hint: "who to buy from, who to avoid" },
-    { id: "kpis", label: "KPI strip", hint: "spend, exposure, priority, hidden risks" },
-  { id: "copilot", label: "AI copilot shortcut", hint: "ask the agents about this view" },
+    { id: "copilot", label: "AI copilot shortcut", hint: "ask the agents about this view" },
 ];
 const STEPS = ["Loading your profile", "Selecting risk signals for your role", "Nemotron is designing your layout", "Preparing your projects"];
 
