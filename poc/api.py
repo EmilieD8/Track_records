@@ -16,7 +16,7 @@ from pydantic import BaseModel
 import data_tools as dt
 from agents import Run, build_system_prompt, run_supervisor
 import guardrails as gr
-from config import ENRICH_DIR, NEBIUS_API_KEY, NVIDIA_API_KEY, OCR_MODELS, PROVIDERS, ROOT, TAVILY_API_KEY
+from config import CACHE_DIR, ENRICH_DIR, NEBIUS_API_KEY, NVIDIA_API_KEY, OCR_MODELS, PROVIDERS, ROOT, TAVILY_API_KEY
 from extract import DOC_EXT, chunk_docs, extract_file, list_files
 from llm import list_models
 from personas import load_personas, save_personas
@@ -269,7 +269,7 @@ async def upload_docs(files: list[UploadFile] = File(...), provider: str = Form(
                       model: str = Form("nvidia/nemotron-parse")):
     """Files picked on the user's own computer (single files or a whole folder): saved, extracted (OCR when needed)
     and added to the shared documents the Document Agent searches."""
-    dest = ROOT / ".cache" / "uploads" / "docs"
+    dest = CACHE_DIR / "uploads" / "docs"
     dest.mkdir(parents=True, exist_ok=True)
     added = []
     for f in files:
