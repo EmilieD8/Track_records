@@ -1,14 +1,13 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { BarChart3, Bot, Building2, ChevronDown, ChevronRight, FolderKanban, LogOut, MessagesSquare, Plus, Settings, ShieldCheck, Trash2 } from "lucide-react";
+import { Bot, Building2, ChevronDown, ChevronRight, FolderKanban, LogOut, MessagesSquare, Plus, Settings, ShieldCheck, Trash2 } from "lucide-react";
 import { api, type Persona } from "./api";
 import SettingsPage from "./pages/Setup";
-import Dashboard from "./pages/Dashboard";
 import SupplierDive from "./pages/SupplierDive";
 import Copilot from "./pages/Copilot";
 import Login from "./pages/Login";
 import Workspace from "./pages/Workspace";
 
-export type Page = "login" | "configure" | "workspace" | "dashboard" | "supplier" | "copilot" | "settings";
+export type Page = "login" | "configure" | "workspace" | "supplier" | "copilot" | "settings";
 export interface UiConfig { per_item: number; panels: string[] }
 export interface Project { id: string; name: string; created?: string; messages?: any[]; items?: any[]; eu_only?: boolean; per_item?: number; showed?: boolean; copilot?: any[] }
 
@@ -42,10 +41,9 @@ interface Ctx {
 const AppCtx = createContext<Ctx>(null as unknown as Ctx);
 export const useApp = () => useContext(AppCtx);
 
-const SUB: { id: Page; label: string; icon: JSX.Element }[] = [
-  { id: "workspace", label: "Chat & item bubbles", icon: <MessagesSquare size={15} /> },
-  { id: "supplier", label: "Supplier dashboard", icon: <Building2 size={15} /> },
-  { id: "dashboard", label: "Portfolio risk", icon: <BarChart3 size={15} /> },
+const SUB: { id: Page; label: string; icon: JSX.Element; needsRequest?: boolean }[] = [
+  { id: "workspace", label: "Request & dashboards", icon: <MessagesSquare size={15} /> },
+  { id: "supplier", label: "Supplier dashboard", icon: <Building2 size={15} />, needsRequest: true },
   { id: "copilot", label: "AI copilot", icon: <Bot size={15} /> },
 ];
 
@@ -179,10 +177,13 @@ export default function App() {
                   </div>
                   {open && (
                     <div className="mb-1 ml-7 border-l border-line pl-2">
-                      {SUB.map((s) => (
-                        <button key={s.id} onClick={() => openProject(p.id, s.id)}
-                          className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] ${active && page === s.id ? "bg-tint-2 font-semibold text-petrol-dark" : "text-slate-ink hover:bg-canvas"}`}>
-                          {s.icon}{s.label}</button>))}
+                      {SUB.map((s) => {
+                        const locked = s.needsRequest && !p.showed;
+                        return (
+                          <button key={s.id} disabled={locked} title={locked ? "Available once the request chat is complete" : ""} onClick={() => openProject(p.id, s.id)}
+                            className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] ${locked ? "cursor-not-allowed text-muted/50" : active && page === s.id ? "bg-tint-2 font-semibold text-petrol-dark" : "text-slate-ink hover:bg-canvas"}`}>
+                            {s.icon}{s.label}</button>);
+                      })}
                     </div>
                   )}
                 </div>
@@ -201,7 +202,6 @@ export default function App() {
               <div className="flex h-full flex-col items-center justify-center text-muted"><FolderKanban size={40} className="text-line-strong" />
                 <p className="mt-2">Create a project with "New project" to start.</p></div>)}
             {page === "settings" && <SettingsPage />}
-            {page === "dashboard" && <Dashboard />}
             {page === "supplier" && <SupplierDive />}
             {page === "copilot" && <Copilot key={project?.id ?? "none"} />}
           </main>

@@ -36,7 +36,25 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
   const [view, setView] = useState<[number, number, number]>([root.x, root.y, root.r * 2]);
   const [hover, setHover] = useState<N | null>(null);
   const anim = useRef(0);
-  useEffect(() => { setFocus(root); setView([root.x, root.y, root.r * 2]); }, [root]);
+  const focusPath = useRef<string[]>([]);
+  const lastData = useRef<PackDatum | null>(null);
+  // Re-layout (e.g. container resized) keeps the zoomed node; only new data resets to the root.
+  useEffect(() => {
+    let target: N = root;
+    if (lastData.current === data && focusPath.current.length) {
+      for (const name of focusPath.current) {
+        const next = target.children?.find((c) => (c.data.id ?? c.data.name) === name) as N | undefined;
+        if (!next) { target = root; break; }
+        target = next;
+      }
+    }
+    lastData.current = data;
+    focusPath.current = target.ancestors().reverse().slice(1).map((a) => a.data.id ?? a.data.name);
+    cancelAnimationFrame(anim.current);
+    setFocus(target);
+    setView([target.x, target.y, target.r * 2]);
+    onFocus?.(target);
+  }, [root]);
 
   const zoomTo = (n: N) => {
     cancelAnimationFrame(anim.current);
@@ -51,6 +69,7 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
     };
     anim.current = requestAnimationFrame(step);
     setFocus(n);
+    focusPath.current = n.ancestors().reverse().slice(1).map((a) => a.data.id ?? a.data.name);
     onFocus?.(n);
   };
 
@@ -86,7 +105,7 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
               <circle r={r} fill={col} fillOpacity={kind === "item" && n !== focus ? 0.55 : isCat ? 0.13 : kind === "factor" ? 0.85 : 0.82}
                 stroke={isCat ? col : hover === n ? "#0f172a" : "#fff"} strokeOpacity={isCat ? 0.55 : 1} strokeWidth={isCat ? 1.5 : hover === n ? 2 : 1.2} />
               {!isCat && r > 6 && <circle r={r} fill="url(#shine)" pointerEvents="none" />}
-              {n.data.current === true && kind === "supplier" && r > 6 && <circle r={r + 3.5} fill="none" stroke="#00646e" strokeWidth={2.5} pointerEvents="none" />}
+              {(n.data as any).recommended && kind === "supplier" && r > 6 && <circle r={r + 4} fill="none" stroke="#00646e" strokeWidth={3} pointerEvents="none" />}
             </g>
           );
         })}
@@ -100,7 +119,9 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
                 <>
                   <text y={-2} fontSize={Math.max(11, Math.min(22, r / 5))} fontWeight={700} fill="#0f172a" style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 3 }}>{n.data.name}</text>
                   <text y={Math.max(11, Math.min(22, r / 5)) + 6} fontSize={Math.max(9, Math.min(14, r / 8))} fill="#0f172a" style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 3 }}>
-                    {n.children?.length ?? 0} suppliers · best risk {n.data.risk}{n.data.quantity ? ` · qty ${n.data.quantity}` : ""}</text>
+                    {n.children?.length ?? 0} suppliers{n.data.quantity ? ` · qty ${n.data.quantity}` : ""}</text>
+                  {(n.data as any).recommended_name && <text y={Math.max(11, Math.min(22, r / 5)) + Math.max(9, Math.min(14, r / 8)) + 12} fontSize={Math.max(9, Math.min(13, r / 9))} fontWeight={600} fill="#004a52" style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 3 }}>
+                    ★ recommended: {(n.data as any).recommended_name} (risk {n.data.risk})</text>}
                 </>
               ) : kind === "category" ? (
                 <>
@@ -111,7 +132,7 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
                 kind === "supplier" ? (
                   <>
                     <text y={-fs * 0.1} fontSize={fs * 1.5} fontWeight={700} fill="#fff" fontFamily="JetBrains Mono">{n.data.risk}</text>
-                    <text y={-fs * 1.45} fontSize={Math.max(8, fs * 0.5)} fill="#fff" opacity={0.9} fontFamily="JetBrains Mono">RISK</text>
+                    <text y={-fs * 1.45} fontSize={Math.max(8, fs * 0.5)} fill="#fff" opacity={0.95} fontFamily="JetBrains Mono" fontWeight={(n.data as any).recommended ? 700 : 400}>{(n.data as any).recommended ? "★ RECOMMENDED · RISK" : "RISK"}</text>
                     <text y={fs * 1.25} fontSize={Math.max(9, fs * 0.72)} fill="#fff" fontWeight={700} textDecoration="underline"
                       pointerEvents="visiblePainted" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); onOpenSupplier(n.data.id!); }}>
                       {n.data.name}<title>Open supplier dashboard</title></text>
@@ -154,6 +175,7 @@ export default function ZoomPack({ data, onFocus, onOpenSupplier, height = 640 }
         <div className="label mb-1">Bubble encoding</div>
         <div className="flex items-center gap-2"><span className="h-6 w-6 rounded-full bg-[#10b981]" /> big + green = low risk</div>
         <div className="mt-1 flex items-center gap-2"><span className="ml-1.5 h-3 w-3 rounded-full bg-[#ef4444]" /><span className="ml-1.5">small + red = high risk</span></div>
+        <div className="mt-1 flex items-center gap-2"><span className="h-4 w-4 rounded-full border-[3px] border-petrol" /> recommended supplier</div>
 
       </div>
     </div>

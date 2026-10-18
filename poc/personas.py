@@ -19,6 +19,11 @@ DEFAULT_PERSONAS = [
     },
     {
         "id": "buyer",
+        "ui_config": {"per_item": 8, "panels": ["bubbles", "recommendations", "copilot"]},
+        "ui_spec": {"title": "Rolling Stock Sourcing", "greeting": "Hello Lena, ready to source your next rolling stock items?",
+                    "summary": "Request-driven sourcing: items first, then the suppliers that can deliver them and their risk.",
+                    "kpis": [], "panels": ["bubbles", "recommendations", "copilot"], "highlight_categories": [],
+                    "recommendation_focus": "lowest risk with proven delivery", "generated_by": "nvidia/nemotron-3-super-120b-a12b"},
         "name": "Lena Weber",
         "role": "Strategic Buyer",
         "department": "Rolling Stock Procurement (bogies, brakes, doors)",
