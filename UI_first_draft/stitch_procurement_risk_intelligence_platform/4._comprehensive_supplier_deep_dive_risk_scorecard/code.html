@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "surface-container-high": "#dce9ff",
+          "surface-dim": "#cbdbf5",
+          "surface-container-lowest": "#ffffff",
+          "secondary-fixed": "#dae2fd",
+          "secondary-fixed-dim": "#bec6e0",
+          "secondary-container": "#dae2fd",
+          "on-error": "#ffffff",
+          "on-error-container": "#93000a",
+          "tertiary-container": "#00646f",
+          "on-secondary": "#ffffff",
+          "on-background": "#0b1c30",
+          "primary-fixed-dim": "#88d2dd",
+          "tertiary": "#004a53",
+          "on-secondary-container": "#5c647a",
+          "on-primary-container": "#93dee9",
+          "surface-container-highest": "#d3e4fe",
+          "error-container": "#ffdad6",
+          "on-primary": "#ffffff",
+          "primary-container": "#00646e",
+          "surface-container-low": "#eff4ff",
+          "surface-tint": "#0c6872",
+          "on-secondary-fixed-variant": "#3f465c",
+          "on-primary-fixed-variant": "#004f57",
+          "outline-variant": "#bec8ca",
+          "on-secondary-fixed": "#131b2e",
+          "on-primary-fixed": "#001f23",
+          "outline": "#6f797a",
+          "on-tertiary-fixed-variant": "#004f58",
+          "on-tertiary-fixed": "#001f24",
+          "on-surface-variant": "#3f484a",
+          "surface-container": "#e5eeff",
+          "surface": "#f8f9ff",
+          "error": "#ba1a1a",
+          "primary-fixed": "#a4effa",
+          "on-tertiary": "#ffffff",
+          "on-surface": "#0b1c30",
+          "background": "#f8f9ff",
+          "tertiary-fixed-dim": "#75d4e4",
+          "surface-bright": "#f8f9ff",
+          "tertiary-fixed": "#97f0ff",
+          "on-tertiary-container": "#81e0f0",
+          "inverse-on-surface": "#eaf1ff",
+          "inverse-surface": "#213145",
+          "secondary": "#565e74",
+          "inverse-primary": "#88d2dd",
+          "primary": "#004a52",
+          "surface-variant": "#d3e4fe"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "margin": "1rem",
+          "space-xs": "0.25rem",
+          "space-xl": "2.5rem",
+          "gutter": "1rem",
+          "space-sm": "0.5rem",
+          "space-md": "1rem",
+          "space-lg": "1.5rem",
+          "margin-desktop": "2rem",
+          "gutter-desktop": "1.5rem"
+        },
+        "fontFamily": {
+          "headline-md": [
+            "Inter"
+          ],
+          "label-sm": [
+            "JetBrains Mono"
+          ],
+          "headline-xl": [
+            "Inter"
+          ],
+          "display-lg": [
+            "Inter"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "data-metric": [
+            "JetBrains Mono"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-md": [
+            "JetBrains Mono"
+          ],
+          "headline-lg": [
+            "Inter"
+          ]
+        },
+        "fontSize": {
+          "headline-md": [
+            "18px",
+            {
+              "lineHeight": "24px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-sm": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl": [
+            "28px",
+            {
+              "lineHeight": "36px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "display-lg": [
+            "36px",
+            {
+              "lineHeight": "44px",
+              "letterSpacing": "-0.025em",
+              "fontWeight": "700"
+            }
+          ],
+          "body-md": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "letterSpacing": "0",
+              "fontWeight": "400"
+            }
+          ],
+          "data-metric": [
+            "24px",
+            {
+              "lineHeight": "28px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "16px",
+            {
+              "lineHeight": "24px",
+              "letterSpacing": "0",
+              "fontWeight": "400"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "letterSpacing": "0",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-lg": [
+            "22px",
+            {
+              "lineHeight": "28px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      },
+    },
+  }</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><header class="fixed top-0 left-0 right-0 h-16 bg-primary text-on-primary z-50 shadow-[0_1px_8px_rgba(0,0,0,0.06)]"><div class="h-16 w-full px-margin-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><img alt="Siemens SupplyGuard Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1X94cJCdnINQFSvlaz0QbuLuo4RJvqzH2XmLQXBjHwaz93iiDKy-NfwsQ5ZeHa4RAQwS-AFVqN_SlhV9oYaKvti03WKrvkJka-YNW_X9XXLSQqtdesxjQ4Vk7xQlKadIvv6mX4-Q_X9Jh3iZEWwYzUW_wBKvCbu5Ug2z5XQ7LXunyFMMW9OSl4WLfD17gzKH01x5QT99UQcixmfME7Ll3zG2Ctb5__I_tB3kJ4XWxWUrV9g9C4OdoVuHA"/><div class="flex flex-col"><span class="font-headline-md text-headline-md text-on-primary tracking-tight leading-none">SupplyGuard</span><span class="font-label-sm text-label-sm text-primary-fixed-dim tracking-wider uppercase leading-none mt-1">Procurement Intelligence</span></div></div><div class="flex-1 max-w-xl mx-space-md hidden md:flex items-center gap-space-sm"><div class="relative w-72"><select class="w-full h-9 bg-primary-container text-on-primary font-label-md text-label-md rounded-lg pl-3 pr-8 appearance-none focus:outline-none cursor-pointer"><option class="bg-primary text-on-primary" value="alpha">Project Alpha - High Voltage Switchgear</option><option class="bg-primary text-on-primary" value="orion">Project Orion - Traction Motors</option><option class="bg-primary text-on-primary" value="helios">Project Helios - IoT Sensors</option></select><span class="material-symbols-outlined absolute right-2 top-2 pointer-events-none text-on-primary-container text-lg">expand_more</span></div><div class="relative flex-1"><span class="material-symbols-outlined absolute left-3 top-2 text-primary-fixed-dim text-lg">search</span><input class="w-full h-9 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded-lg pl-9 pr-3 placeholder-outline focus:outline-none" placeholder="Search components, tier-N suppliers, unspsc..." type="text"/></div></div><div class="flex items-center gap-space-sm"><button class="h-9 px-space-md bg-secondary text-on-secondary font-headline-md text-body-sm rounded-lg flex items-center gap-space-xs hover:bg-on-secondary-fixed-variant hover:text-on-secondary transition-colors"><span class="material-symbols-outlined text-base">add_circle</span><span class="hidden lg:inline">New Sourcing RFQ</span></button><button class="relative h-9 px-space-sm bg-primary-container text-on-primary font-body-sm text-body-sm rounded-lg flex items-center gap-space-xs hover:bg-tertiary hover:text-on-tertiary transition-colors"><span class="material-symbols-outlined text-lg">warning</span><span class="hidden xl:inline">Risk Alerts</span><span class="w-2 h-2 rounded-full bg-error ml-1"></span></button><div class="relative flex items-center gap-space-xs bg-primary-container rounded-lg px-2 py-1"><div class="flex flex-col text-right"><select class="bg-transparent text-on-primary font-headline-md text-label-sm focus:outline-none cursor-pointer"><option class="bg-primary text-on-primary" value="camille">Camille (Senior Buyer)</option><option class="bg-primary text-on-primary" value="aurore">Aurore (Junior Buyer)</option><option class="bg-primary text-on-primary" value="brigitte">Brigitte (Supply Chain Director)</option></select><span class="font-label-sm text-label-sm text-primary-fixed-dim">Siemens Energy AG</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4z3gtcYsM7m1_VgZO788sGoXghn7HFnS_BX681-2AUR8DvNA2CbEblJNV5bEC26KND8uWpDwZXhbDay6ZdYYqHxsOgIWSqGX3I-R0bWyS9CRL5CE4Vr7WXjZzlyetce6z5Qf3nLin0Rej9F2gXjzP0ZxnxLzdIgt3XAaoNtl7GqTOKVL9PqEbx9hidInL9FPwJ97v9FaCEsKOVKPU-LI4tHpB3fPL-UFayEgKRb1QdRrbiaCuwOgR"/></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest z-40 flex flex-col justify-between py-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-xs"><div class="px-space-md mb-space-sm"><span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">Analytical Modules</span></div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-surface-container-high text-on-surface font-semibold rounded-lg"><a class="flex items-center px-space-md py-2.5 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="risk-dashboard" href="#"><span class="material-symbols-outlined mr-space-sm text-lg text-outline">monitoring</span>Risk Dashboard</a><a class="flex items-center px-space-md py-2.5 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="mind-map-explorer" href="#"><span class="material-symbols-outlined mr-space-sm text-lg text-outline">account_tree</span>Mind Map Explorer</a><a aria-current="page" class="flex items-center px-space-md py-2.5 transition-colors bg-surface-container-high text-on-surface font-semibold rounded-lg" data-path="supplier-deep-dive" href="#"><span class="material-symbols-outlined mr-space-sm text-lg text-outline">domain</span>Supplier Deep Dive</a><a class="flex items-center px-space-md py-2.5 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="ai-copilot-chat" href="#"><span class="material-symbols-outlined mr-space-sm text-lg text-outline">smart_toy</span>AI Copilot Chat</a><a class="flex items-center px-space-md py-2.5 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined mr-space-sm text-lg text-outline">settings</span>Settings</a></nav></div><div class="px-space-md"><div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-outline">GRID TELEMETRY</span><span class="w-2 h-2 rounded-full bg-tertiary-container"></span></div><span class="font-label-md text-label-md text-on-surface font-semibold">ERP Sync: Operational</span><span class="font-body-sm text-body-sm text-on-surface-variant">Next run in 14m</span></div></div></aside><div class="pl-64"><main class="relative pt-16 w-full min-h-screen bg-surface"><div class="flex flex-col w-full">
+<!-- Command Strip & Entity Master Summary -->
+<div class="px-margin-desktop py-space-md bg-surface-container-low shadow-sm flex flex-col gap-space-md">
+<!-- Breadcrumb & Micro-Actions -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm text-outline">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-wider">
+<span>Strategic Sourcing</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span>High Voltage Switchgear</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-on-surface font-semibold">Part SCP-0305</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-primary font-semibold">ABB MicroTech GmbH</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm px-2.5 py-1 bg-surface-container rounded font-medium text-on-surface-variant flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+          DUNS: 31-592-8021
+        </span>
+<button class="h-8 px-space-sm bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded flex items-center gap-1 hover:bg-surface-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-base">download</span>
+          Export Audit PDF
+        </button>
+<button class="h-8 px-space-sm bg-primary text-on-primary font-label-md text-label-md rounded flex items-center gap-1 hover:bg-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-base">add_moderator</span>
+          Update Risk Model
+        </button>
+</div>
+</div>
+<!-- Entity Identity Banner -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
+<div class="flex items-start gap-space-md min-w-0">
+<div class="w-14 h-14 rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-center p-2 shrink-0">
+<span class="material-symbols-outlined text-3xl text-primary">precision_manufacturing</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex flex-wrap items-center gap-space-sm">
+<h1 class="font-headline-xl text-headline-xl text-on-surface font-semibold tracking-tight truncate">ABB MicroTech GmbH</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold tracking-wide uppercase">
+<span class="material-symbols-outlined text-xs">verified</span>
+              Siemens Preferred Sourcing Partner
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-xs">hub</span> Tier-1 Prime
+            </span>
+</div>
+<div class="flex flex-wrap items-center gap-x-space-md gap-y-1 font-body-sm text-body-sm text-on-surface-variant mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm text-outline">location_on</span> Mannheim, Baden-Württemberg, Germany</span>
+<span>•</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm text-outline">inventory_2</span> Primary Part: <strong class="text-on-surface font-medium">SCP-0305 (Micro-Vacuum Arc Interrupter)</strong></span>
+<span>•</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm text-outline">schedule</span> Supplier tenure: 6 Years</span>
+</div>
+</div>
+</div>
+<!-- Overall Index Hero Metric Badge -->
+<div class="flex items-center gap-space-md bg-surface-container-lowest p-space-sm px-space-md rounded-xl shadow-sm self-start lg:self-center shrink-0">
+<div class="flex flex-col text-right">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Overall Total Risk Index</span>
+<div class="flex items-baseline justify-end gap-1">
+<span class="font-data-metric text-display-lg text-primary font-bold">18</span>
+<span class="font-label-md text-label-md text-outline">/ 100</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold flex items-center justify-end gap-0.5">
+<span class="material-symbols-outlined text-xs">trending_down</span> -16 pts (12 mo delta)
+          </span>
+</div>
+<div class="h-12 w-px bg-surface-container"></div>
+<div class="flex flex-col items-center justify-center">
+<div class="px-3 py-1 rounded-full bg-[#ECFDF5] text-[#059669] flex items-center gap-1.5 font-label-md text-label-md font-semibold">
+<span class="w-2 h-2 rounded-full bg-[#059669] animate-pulse"></span>
+            Low Risk Tier
+          </div>
+<span class="font-label-sm text-label-sm text-outline mt-1">99th Percentile Stability</span>
+</div>
+</div>
+</div>
+<!-- Navigation Sub-Tabs -->
+<div class="flex items-center gap-space-xs mt-space-xs -mb-space-md">
+<button class="tab-button h-10 px-space-md font-label-md text-label-md font-semibold text-primary border-b-2 border-primary bg-surface-container-lowest rounded-t-lg transition-colors flex items-center gap-2" id="tab-btn-overview" onclick="switchTab('overview')">
+<span class="material-symbols-outlined text-base">dashboard</span>
+        Overview &amp; Intelligence
+      </button>
+<button class="tab-button h-10 px-space-md font-label-md text-label-md font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-t-lg transition-colors flex items-center gap-2" id="tab-btn-scorecard" onclick="switchTab('scorecard')">
+<span class="material-symbols-outlined text-base">analytics</span>
+        Risk Dimensions (21 Vectors)
+      </button>
+<button class="tab-button h-10 px-space-md font-label-md text-label-md font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-t-lg transition-colors flex items-center gap-2" id="tab-btn-deliveries" onclick="switchTab('deliveries')">
+<span class="material-symbols-outlined text-base">local_shipping</span>
+        Historical Deliveries &amp; PO Ledger
+      </button>
+</div>
+</div>
+<!-- TAB CONTENT 1: OVERVIEW & INTELLIGENCE -->
+<div class="tab-pane flex flex-col gap-space-lg px-margin-desktop py-space-lg" id="tab-overview">
+<!-- Top Analytical Grid: Buyer Notes + KPI Cluster -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- Buyer Dossier & Trust Note (5 Cols) -->
+<div class="xl:col-span-5 bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute -top-10 -right-10 w-36 h-36 bg-surface-container-high rounded-full opacity-40 pointer-events-none"></div>
+<div class="flex flex-col gap-space-sm relative z-10">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">Personal Buyer Notes</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Confidential • Internal Only</span>
+</div>
+<div class="bg-surface p-space-md rounded-lg flex flex-col gap-space-sm mt-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<img alt="Camille avatar" class="w-7 h-7 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4z3gtcYsM7m1_VgZO788sGoXghn7HFnS_BX681-2AUR8DvNA2CbEblJNV5bEC26KND8uWpDwZXhbDay6ZdYYqHxsOgIWSqGX3I-R0bWyS9CRL5CE4Vr7WXjZzlyetce6z5Qf3nLin0Rej9F2gXjzP0ZxnxLzdIgt3XAaoNtl7GqTOKVL9PqEbx9hidInL9FPwJ97v9FaCEsKOVKPU-LI4tHpB3fPL-UFayEgKRb1QdRrbiaCuwOgR"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold leading-none">Camille Laurent</span>
+<span class="font-label-sm text-label-sm text-outline leading-none mt-1">Lead Procurement Manager (High Voltage)</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Logged 18 days ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface italic leading-relaxed pt-1">
+              "Long-standing relationship since 2018. Very reliable on custom tooling. Noticeable price firmness in Q3 negotiations, but zero delivery failures during supply crunch."
+            </p>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs bg-surface-container-low px-3 py-2 rounded">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Camille's Trust Rating:</span>
+<div class="flex items-center gap-1.5">
+<span class="font-data-metric text-headline-md text-primary font-bold">9.4</span>
+<span class="font-label-sm text-label-sm text-outline">/ 10</span>
+<span class="material-symbols-outlined text-primary text-base ml-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-md text-outline font-label-sm text-label-sm mt-space-sm">
+<span>Supplier ESG Audit: Signed Q2 2024</span>
+<a class="text-primary hover:underline font-medium flex items-center gap-1" href="#">Add Memo <span class="material-symbols-outlined text-xs">open_in_new</span></a>
+</div>
+</div>
+<!-- Historical Purchase Stats Cluster (7 Cols) -->
+<div class="xl:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-space-sm">
+<!-- Stat 1 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Purchase Volume</span>
+<span class="material-symbols-outlined text-base">euro_symbol</span>
+</div>
+<div class="my-space-xs">
+<span class="font-data-metric text-data-metric text-on-surface font-bold">€1,850,000</span>
+<span class="block font-label-sm text-label-sm text-tertiary mt-0.5">+14.2% YoY allocated</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 82%"></div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Confirmation Rate</span>
+<span class="material-symbols-outlined text-base">thumb_up</span>
+</div>
+<div class="my-space-xs">
+<span class="font-data-metric text-data-metric text-on-surface font-bold">99.2%</span>
+<span class="block font-label-sm text-label-sm text-outline mt-0.5">Target: 95.0%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container" style="width: 99.2%"></div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Delivery Rating</span>
+<span class="material-symbols-outlined text-base">schedule</span>
+</div>
+<div class="my-space-xs">
+<span class="font-data-metric text-data-metric text-on-surface font-bold">98.4%</span>
+<span class="block font-label-sm text-label-sm text-[#059669] mt-0.5 font-medium">On-Time &amp; In-Full (OTIF)</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669]" style="width: 98.4%"></div>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Order Change Rate</span>
+<span class="material-symbols-outlined text-base">sync_alt</span>
+</div>
+<div class="my-space-xs">
+<span class="font-data-metric text-data-metric text-on-surface font-bold">2.1%</span>
+<span class="block font-label-sm text-label-sm text-[#059669] mt-0.5">Benchmark avg: 6.8%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669]" style="width: 21%"></div>
+</div>
+</div>
+<!-- Stat 5 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Sourcing Risk Tier</span>
+<span class="material-symbols-outlined text-base">shield_with_heart</span>
+</div>
+<div class="my-space-xs">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">Low</span>
+</div>
+<span class="block font-label-sm text-label-sm text-outline mt-0.5">Dual-source optional</span>
+</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">Class A Reliability</div>
+</div>
+<!-- Stat 6 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">SC Complexity</span>
+<span class="material-symbols-outlined text-base">schema</span>
+</div>
+<div class="my-space-xs">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#D97706]"></span>
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">Moderate</span>
+</div>
+<span class="block font-label-sm text-label-sm text-outline mt-0.5">3 Tier-2 Sub-Suppliers</span>
+</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">EU Single-market routes</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Visual Risk Evolution Graph (12-Month Telemetry) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">show_chart</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">12-Month Longitudinal Risk Trajectory</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Continuous composite telemetry computed from 21 sensor vectors and external market signals</p>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-2 text-label-sm font-label-sm">
+<span class="w-3 h-3 rounded-sm bg-primary"></span>
+<span class="text-on-surface">Total Risk Index (Composite)</span>
+</div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm text-outline">
+<span class="w-3 h-0.5 bg-outline-variant"></span>
+<span>Industry Risk Baseline (28)</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">Trend: -47.1% Disruption Risk</span>
+</div>
+</div>
+<!-- SVG Line/Area Evolution Chart -->
+<div class="w-full h-64 relative bg-surface rounded-lg p-space-sm flex flex-col justify-end overflow-hidden">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 900 220">
+<defs>
+<lineargradient id="riskGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#00646E" stop-opacity="0.32"></stop>
+<stop offset="100%" stop-color="#00646E" stop-opacity="0.01"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines (horizontal) -->
+<line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="50" x2="880" y1="30" y2="30"></line>
+<text fill="#6f797a" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="34">40</text>
+<line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="50" x2="880" y1="80" y2="80"></line>
+<text fill="#6f797a" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="84">30</text>
+<!-- Industry Baseline (28 points => y = 90) -->
+<line stroke="#bec8ca" stroke-dasharray="4 4" stroke-width="1.5" x1="50" x2="880" y1="90" y2="90"></line>
+<text fill="#6f797a" font-family="Inter" font-size="9" text-anchor="end" x="880" y="86">Avg Benchmark: 28</text>
+<line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="50" x2="880" y1="130" y2="130"></line>
+<text fill="#6f797a" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="134">20</text>
+<line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="50" x2="880" y1="180" y2="180"></line>
+<text fill="#6f797a" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="184">10</text>
+<!-- Risk Curve Data:
+               M1: 34 (y=60)
+               M2: 33 (y=65)
+               M3: 31 (y=75)
+               M4: 30 (y=80)
+               M5: 27 (y=95)
+               M6: 25 (y=105)
+               M7: 26 (y=100)
+               M8: 23 (y=115)
+               M9: 21 (y=125)
+               M10: 20 (y=130)
+               M11: 19 (y=135)
+               M12: 18 (y=140)
+               Points: (70,60), (144,65), (218,75), (292,80), (366,95), (440,105), (514,100), (588,115), (662,125), (736,130), (810,135), (860,140)
+          -->
+<path d="M 70 60 Q 107 62 144 65 T 218 75 T 292 80 T 366 95 T 440 105 T 514 100 T 588 115 T 662 125 T 736 130 T 810 135 T 860 140 L 860 200 L 70 200 Z" fill="url(#riskGrad)"></path>
+<path d="M 70 60 Q 107 62 144 65 T 218 75 T 292 80 T 366 95 T 440 105 T 514 100 T 588 115 T 662 125 T 736 130 T 810 135 T 860 140" fill="none" stroke="#004a52" stroke-linecap="round" stroke-width="3"></path>
+<!-- Vertex Points -->
+<circle cx="70" cy="60" fill="#004a52" r="4"></circle>
+<circle cx="218" cy="75" fill="#00646e" r="3"></circle>
+<circle cx="440" cy="105" fill="#00646e" r="3"></circle>
+<circle cx="588" cy="115" fill="#00646e" r="3"></circle>
+<circle cx="860" cy="140" fill="#004a52" r="5"></circle>
+<circle cx="860" cy="140" fill="none" opacity="0.6" r="9" stroke="#00646e" stroke-width="1.5"></circle>
+</svg>
+<!-- X-Axis Labels -->
+<div class="flex justify-between pl-12 pr-4 pt-1 font-label-sm text-label-sm text-outline border-t border-surface-container">
+<span>May '23 (34)</span>
+<span>Jun</span>
+<span>Jul (31)</span>
+<span>Aug</span>
+<span>Sep</span>
+<span>Oct (25)</span>
+<span>Nov</span>
+<span>Dec (23)</span>
+<span>Jan '24</span>
+<span>Feb (20)</span>
+<span>Mar</span>
+<span class="text-primary font-bold">Apr '24 (18 - Now)</span>
+</div>
+</div>
+<!-- Anomaly and Insight callout strip -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm pt-space-xs">
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-primary text-base mt-0.5">trending_down</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface block">Sub-Tier Stabilized</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Resolved Tier-2 quartz insulator backlog via dual-facility activation in Munich.</p>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-primary text-base mt-0.5">verified_user</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface block">ISO 27001 Re-Certification</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Digital security posture audit concluded with zero major non-conformances in Q1.</p>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[#059669] text-base mt-0.5">price_check</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface block">Contract Fixed Indexed</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Long-term copper pass-through hedging agreement active through December 2025.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Executive Highlight: Part SCP-0305 Technical Alignment -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-secondary-fixed flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-2xl">memory</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">Active Component: Vacuum Arc Interrupter (SCP-0305)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Critical modular core for Siemens High Voltage Switchgear Alpha unit. Lead time: 14 weeks. Single-defect tolerance: Zero PPM.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="h-9 px-space-md bg-surface-container text-on-surface font-headline-md text-body-sm rounded hover:bg-surface-container-high transition-colors" onclick="switchTab('scorecard')">
+          View 21 Risk Vectors
+        </button>
+<button class="h-9 px-space-md bg-secondary text-on-secondary font-headline-md text-body-sm rounded hover:bg-on-secondary-fixed-variant transition-colors" onclick="switchTab('deliveries')">
+          Audit Delivery History
+        </button>
+</div>
+</div>
+</div>
+<!-- TAB CONTENT 2: COMPLETE COMPREHENSIVE RISK SCORECARD (21 DIMENSIONS) -->
+<div class="tab-pane hidden flex flex-col gap-space-lg px-margin-desktop py-space-lg" id="tab-scorecard">
+<!-- Header of Scorecard section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Complete 21-Dimension Risk Taxonomy</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Comprehensive audit scoring scale (0 = Ideal / No Risk, 100 = Catastrophic / Maximum Exposure).</p>
+</div>
+<div class="flex items-center gap-space-md text-label-sm font-label-sm">
+<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#059669]"></span><span class="text-on-surface">Low (0-25)</span></div>
+<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#D97706]"></span><span class="text-on-surface">Moderate (26-50)</span></div>
+<div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#DC2626]"></span><span class="text-on-surface">Critical (&gt;50)</span></div>
+</div>
+</div>
+<!-- The 21 Dimensions Grid grouped logically for industrial buyers -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-md">
+<!-- Dimension 1: Total Risk Index -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">01</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Total Risk Index</span>
+<span class="font-label-sm text-label-sm text-outline">Macro aggregate score</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-primary font-bold">18<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 18%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>Low Risk Range</span>
+<span class="text-outline">Delta: -16 YoY</span>
+</div>
+</div>
+</div>
+<!-- Dimension 2: Industry Benchmark Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">02</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Industry Benchmark Score</span>
+<span class="font-label-sm text-label-sm text-outline">DAX Electrical Components Peer Group</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-on-surface font-bold">22<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 22%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Outperforming sector by +6 pts</span>
+<span class="text-outline">Top Quintile</span>
+</div>
+</div>
+</div>
+<!-- Dimension 3: Media Sentiment Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">03</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Media Sentiment Score</span>
+<span class="font-label-sm text-label-sm text-outline">Global news &amp; trade press parsing</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-on-surface font-bold">12<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 12%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Overwhelmingly Favorable</span>
+<span class="text-outline">284 sources audited</span>
+</div>
+</div>
+</div>
+<!-- Dimension 4: External Intelligence Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">04</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">External Intelligence Score</span>
+<span class="font-label-sm text-label-sm text-outline">Third-party telemetry &amp; radar feeds</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-on-surface font-bold">15<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 15%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Verified Stable Feed</span>
+<span class="text-outline">Refinitiv &amp; D&amp;B</span>
+</div>
+</div>
+</div>
+<!-- Dimension 5: Sub-Tier Visibility Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">05</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Sub-Tier Visibility Score</span>
+<span class="font-label-sm text-label-sm text-outline">Tier-2 to Tier-4 transparency mapping</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#D97706] font-bold">28<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#D97706] rounded-full" style="width: 28%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#D97706] font-medium flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>Moderate Watch</span>
+<span class="text-outline">3 Tier-2 Suppliers</span>
+</div>
+</div>
+</div>
+<!-- Dimension 6: Labor Stability Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">06</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Labor Stability Score</span>
+<span class="font-label-sm text-label-sm text-outline">Workforce retention &amp; union harmony</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">9<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 9%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">IG Metall Multi-Year Pact</span>
+<span class="text-outline">No disputes logged</span>
+</div>
+</div>
+</div>
+<!-- Dimension 7: Financial Health Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">07</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Financial Health Score</span>
+<span class="font-label-sm text-label-sm text-outline">Solvency, EBITDA, working capital</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-on-surface font-bold">14<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 14%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Strong Liquidity (Quick Ratio: 2.4x)</span>
+<span class="text-outline">Altman-Z: 4.12</span>
+</div>
+</div>
+</div>
+<!-- Dimension 8: Compliance Risk Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">08</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Compliance Risk Score</span>
+<span class="font-label-sm text-label-sm text-outline">Export controls &amp; legal registries</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">5<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 5%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Zero Violations Recorded</span>
+<span class="text-outline">BAFA Cleared</span>
+</div>
+</div>
+</div>
+<!-- Dimension 9: Safety Incident Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">09</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Safety Incident Score</span>
+<span class="font-label-sm text-label-sm text-outline">OSHA / European workplace safety</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">8<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 8%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">840 Days Without Lost-Time Injury</span>
+<span class="text-outline">ISO 45001</span>
+</div>
+</div>
+</div>
+<!-- Dimension 10: Environmental Exposure Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">10</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Environmental Exposure Score</span>
+<span class="font-label-sm text-label-sm text-outline">Carbon tax &amp; plant geographic vulnerability</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">25<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 25%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Upper Low Threshold</span>
+<span class="text-outline">Rhine flood protection</span>
+</div>
+</div>
+</div>
+<!-- Dimension 11: Digital Security Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">11</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Digital Security Score</span>
+<span class="font-label-sm text-label-sm text-outline">Cyber resilience, OT segmentation</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">16<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 16%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">ISO 27001 Certified</span>
+<span class="text-outline">TISAX Level 3</span>
+</div>
+</div>
+</div>
+<!-- Dimension 12: Operational Resilience Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">12</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Operational Resilience Score</span>
+<span class="font-label-sm text-label-sm text-outline">Tooling redundancy, dual production lines</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">19<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 19%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Failover Line in Nuremberg</span>
+<span class="text-outline">MTBF &gt; 18,000h</span>
+</div>
+</div>
+</div>
+<!-- Dimension 13: Market Sentiment Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">13</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Market Sentiment Score</span>
+<span class="font-label-sm text-label-sm text-outline">Industrial analyst ratings &amp; orderbook</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">11<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 11%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">High Order Backlog Stability</span>
+<span class="text-outline">Book-to-bill: 1.35x</span>
+</div>
+</div>
+</div>
+<!-- Dimension 14: Quality Risk Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">14</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Quality Risk Score</span>
+<span class="font-label-sm text-label-sm text-outline">Defect rate, RMA metrics, batch variance</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">7<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 7%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Six Sigma Certified (&lt;3.4 PPM)</span>
+<span class="text-outline">Zero RMAs in 2024</span>
+</div>
+</div>
+</div>
+<!-- Dimension 15: Governance Risk Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">15</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Governance Risk Score</span>
+<span class="font-label-sm text-label-sm text-outline">Board independence, anti-bribery</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">10<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 10%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Audit Committee Cleared</span>
+<span class="text-outline">KPMG Audited</span>
+</div>
+</div>
+</div>
+<!-- Dimension 16: Geopolitical Risk Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">16</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Geopolitical Risk Score</span>
+<span class="font-label-sm text-label-sm text-outline">Cross-border tariffs &amp; sanctions exposure</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">20<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 20%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Central European Core Base</span>
+<span class="text-outline">EU Schengen Free Transit</span>
+</div>
+</div>
+</div>
+<!-- Dimension 17: Political Stability Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">17</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Political Stability Score</span>
+<span class="font-label-sm text-label-sm text-outline">Sovereign regulatory stability (Germany)</span>
+</div>
+</div>
+<span class="font-data-metric text-headline-lg text-[#059669] font-bold">12<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 12%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">German Federal Jurisdiction</span>
+<span class="text-outline">Rank 98th %ile</span>
+</div>
+</div>
+</div>
+<!-- Dimension 18: Credit Rating Score -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">18</span>
+<div>
+<span class="font-headline-md text-body-lg font-semibold text-on-surface block leading-tight">Credit Rating Score</span>
+<span class="font-label-sm text-label-sm text-outline">Moody's &amp; S&amp;P Grade</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-lg text-headline-lg text-primary font-bold">AAA</span>
+<span class="block font-label-sm text-label-sm text-outline font-data-metric">10/100 Risk</span>
+</div>
+</div>
+<div class="mt-space-md">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669] rounded-full" style="width: 10%"></div>
+</div>
+<div class="flex items-center justify-between mt-2 font-label-sm text-label-sm">
+<span class="text-[#059669] font-medium">Investment Grade Prime</span>
+<span class="text-outline">Default Prob: 0.01%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Dimension 19: Full ESG Performance Triad Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">19</span>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">ESG Performance Scorecard (Environmental, Social, Governance)</h3>
+</div>
+<span class="px-2.5 py-1 rounded bg-[#ECFDF5] text-[#059669] font-label-sm text-label-sm font-semibold">CSRD / CSDDD Fully Compliant</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md pt-space-xs">
+<!-- E -->
+<div class="bg-surface p-space-md rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-full bg-[#ECFDF5] text-[#059669] flex items-center justify-center font-bold">E</span>
+<span class="font-headline-md text-body-md font-semibold text-on-surface">Environmental</span>
+</div>
+<span class="font-data-metric text-headline-md text-primary font-bold">15<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="my-space-sm">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669]" style="width: 15%"></div>
+</div>
+</div>
+<ul class="text-body-sm font-body-sm text-on-surface-variant flex flex-col gap-1">
+<li class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-[#059669]">check</span> 100% Green Energy at Mannheim Facility</li>
+<li class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-[#059669]">check</span> Scope 1 &amp; 2 Decarbonization Roadmap on track</li>
+</ul>
+</div>
+<!-- S -->
+<div class="bg-surface p-space-md rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-full bg-secondary-fixed text-primary flex items-center justify-center font-bold">S</span>
+<span class="font-headline-md text-body-md font-semibold text-on-surface">Social</span>
+</div>
+<span class="font-data-metric text-headline-md text-primary font-bold">12<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="my-space-sm">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669]" style="width: 12%"></div>
+</div>
+</div>
+<ul class="text-body-sm font-body-sm text-on-surface-variant flex flex-col gap-1">
+<li class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-[#059669]">check</span> German Supply Chain Due Diligence Act (LkSG)</li>
+<li class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-[#059669]">check</span> Fair wage accreditation across all tiers</li>
+</ul>
+</div>
+<!-- G -->
+<div class="bg-surface p-space-md rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-full bg-surface-container-high text-primary flex items-center justify-center font-bold">G</span>
+<span class="font-headline-md text-body-md font-semibold text-on-surface">Governance</span>
+</div>
+<span class="font-data-metric text-headline-md text-primary font-bold">8<span class="text-label-sm text-outline font-normal">/100</span></span>
+</div>
+<div class="my-space-sm">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#059669]" style="width: 8%"></div>
+</div>
+</div>
+<ul class="text-body-sm font-body-sm text-on-surface-variant flex flex-col gap-1">
+<li class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-[#059669]">check</span> Whistleblower hotline operational</li>
+<li class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-[#059669]">check</span> Anti-corruption audits verified annually</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Dimension 20 & 21: Operational & Supply Chain Metrics Matrix -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm font-bold text-primary">20</span>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Operational &amp; Supply Chain Metrics Matrix</h3>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Real-time SAP ERP sync</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-6 gap-space-sm">
+<div class="p-space-sm rounded-lg bg-surface border-0 flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">PO Volume</span>
+<span class="font-data-metric text-headline-md text-on-surface font-bold mt-1">€1,850,000</span>
+<span class="font-body-sm text-body-sm text-[#059669] mt-0.5">YTD FY24</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Delivery Rating</span>
+<span class="font-data-metric text-headline-md text-[#059669] font-bold mt-1">98.4%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">On-Time / In-Full</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Confirm Rate</span>
+<span class="font-data-metric text-headline-md text-primary font-bold mt-1">99.2%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">&lt; 48h turn-around</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Order Change Rate</span>
+<span class="font-data-metric text-headline-md text-[#059669] font-bold mt-1">2.1%</span>
+<span class="font-body-sm text-body-sm text-[#059669] mt-0.5">High Stability</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Sourcing Risk</span>
+<span class="font-data-metric text-headline-md text-[#059669] font-bold mt-1">Low</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Class A certified</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">SC Complexity</span>
+<span class="font-data-metric text-headline-md text-[#D97706] font-bold mt-1">Moderate</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Tier-2 nodes audited</span>
+</div>
+</div>
+</div>
+</div>
+<!-- TAB CONTENT 3: HISTORICAL DELIVERIES & PURCHASE ORDERS LEDGER -->
+<div class="tab-pane hidden flex flex-col gap-space-lg px-margin-desktop py-space-lg" id="tab-deliveries">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">receipt_long</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Procurement Execution &amp; Order Fulfillment History</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Ledger of recent purchase orders and technical lot receipts for Part SCP-0305.</p>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-outline text-base">filter_list</span>
+<select class="h-9 pl-8 pr-6 bg-surface text-on-surface font-label-md text-label-md rounded border-0 focus:outline-none cursor-pointer">
+<option>All PO Cycles (FY23 - FY24)</option>
+<option>High Voltage Only (SCP-0305)</option>
+<option>Deviations / Late Warnings (0)</option>
+</select>
+</div>
+<button class="h-9 px-space-sm bg-surface text-on-surface font-label-md text-label-md rounded hover:bg-surface-container transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-base">tune</span> Column Filters
+        </button>
+</div>
+</div>
+<!-- Hierarchical Risk Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface font-label-sm text-label-sm text-outline uppercase tracking-wider">
+<th class="py-3 px-space-md">PO Reference</th>
+<th class="py-3 px-space-md">Part Number &amp; Desc</th>
+<th class="py-3 px-space-md">Lot Qty</th>
+<th class="py-3 px-space-md">Order Value</th>
+<th class="py-3 px-space-md">Dispatch Date</th>
+<th class="py-3 px-space-md">OTIF Status</th>
+<th class="py-3 px-space-md">Quality Clearance</th>
+<th class="py-3 px-space-md text-right">Audit Trail</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low font-body-sm text-body-sm text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3.5 px-space-md font-label-md text-label-md font-semibold text-primary">PO-2024-8841</td>
+<td class="py-3.5 px-space-md">
+<span class="font-medium text-on-surface">SCP-0305</span>
+<span class="block text-outline text-xs">Vacuum Arc Interrupter (V12)</span>
+</td>
+<td class="py-3.5 px-space-md font-label-md text-label-md">1,200 pcs</td>
+<td class="py-3.5 px-space-md font-label-md text-label-md font-medium">€420,000</td>
+<td class="py-3.5 px-space-md text-outline">12 Apr 2024</td>
+<td class="py-3.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span> Delivered On-Time
+                </span>
+</td>
+<td class="py-3.5 px-space-md">
+<span class="text-[#059669] font-medium flex items-center gap-1 text-xs">
+<span class="material-symbols-outlined text-sm">verified</span> 0 PPM Defect Pass
+                </span>
+</td>
+<td class="py-3.5 px-space-md text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant text-xs font-semibold flex items-center gap-1 ml-auto">
+                  COA Slip <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface/50">
+<td class="py-3.5 px-space-md font-label-md text-label-md font-semibold text-primary">PO-2024-7109</td>
+<td class="py-3.5 px-space-md">
+<span class="font-medium text-on-surface">SCP-0305</span>
+<span class="block text-outline text-xs">Vacuum Arc Interrupter (V12)</span>
+</td>
+<td class="py-3.5 px-space-md font-label-md text-label-md">1,500 pcs</td>
+<td class="py-3.5 px-space-md font-label-md text-label-md font-medium">€525,000</td>
+<td class="py-3.5 px-space-md text-outline">28 Feb 2024</td>
+<td class="py-3.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span> Delivered On-Time
+                </span>
+</td>
+<td class="py-3.5 px-space-md">
+<span class="text-[#059669] font-medium flex items-center gap-1 text-xs">
+<span class="material-symbols-outlined text-sm">verified</span> Passed (Batch #849)
+                </span>
+</td>
+<td class="py-3.5 px-space-md text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant text-xs font-semibold flex items-center gap-1 ml-auto">
+                  COA Slip <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3.5 px-space-md font-label-md text-label-md font-semibold text-primary">PO-2023-9932</td>
+<td class="py-3.5 px-space-md">
+<span class="font-medium text-on-surface">SCP-0305-MOD</span>
+<span class="block text-outline text-xs">Modified Ceramic Seal Assembly</span>
+</td>
+<td class="py-3.5 px-space-md font-label-md text-label-md">900 pcs</td>
+<td class="py-3.5 px-space-md font-label-md text-label-md font-medium">€385,000</td>
+<td class="py-3.5 px-space-md text-outline">19 Dec 2023</td>
+<td class="py-3.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span> Delivered On-Time
+                </span>
+</td>
+<td class="py-3.5 px-space-md">
+<span class="text-[#059669] font-medium flex items-center gap-1 text-xs">
+<span class="material-symbols-outlined text-sm">verified</span> Passed QA Lab
+                </span>
+</td>
+<td class="py-3.5 px-space-md text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant text-xs font-semibold flex items-center gap-1 ml-auto">
+                  COA Slip <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface/50">
+<td class="py-3.5 px-space-md font-label-md text-label-md font-semibold text-primary">PO-2023-6421</td>
+<td class="py-3.5 px-space-md">
+<span class="font-medium text-on-surface">SCP-0305</span>
+<span class="block text-outline text-xs">Vacuum Arc Interrupter (V11)</span>
+</td>
+<td class="py-3.5 px-space-md font-label-md text-label-md">1,450 pcs</td>
+<td class="py-3.5 px-space-md font-label-md text-label-md font-medium">€520,000</td>
+<td class="py-3.5 px-space-md text-outline">04 Oct 2023</td>
+<td class="py-3.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFFBEB] text-[#D97706] font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span> +1d Transit Delay
+                </span>
+</td>
+<td class="py-3.5 px-space-md">
+<span class="text-[#059669] font-medium flex items-center gap-1 text-xs">
+<span class="material-symbols-outlined text-sm">verified</span> Conforms Specs
+                </span>
+</td>
+<td class="py-3.5 px-space-md text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant text-xs font-semibold flex items-center gap-1 ml-auto">
+                  COA Slip <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-space-md py-3 bg-surface flex items-center justify-between font-label-sm text-label-sm text-outline border-t border-surface-container">
+<span>Showing 4 of 24 completed orders for Part SCP-0305</span>
+<div class="flex items-center gap-2">
+<button class="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface disabled:opacity-50" disabled="">Previous</button>
+<span class="text-on-surface font-semibold">Page 1 of 6</span>
+<button class="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">Next</button>
+</div>
+</div>
+</div>
+<!-- Active Production Facility Snapshot -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline block">Dedicated Primary Production Center</span>
+<h4 class="font-headline-md text-headline-md text-on-surface font-semibold mt-1">Mannheim High-Precision Works (Baden-Württemberg)</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Specialized ISO Class 5 cleanroom manufacturing facility dedicated to switchgear interrupter units and high-vacuum brazing.</p>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-on-surface flex items-center gap-1"><span class="material-symbols-outlined text-sm text-primary">location_city</span> 42,000 sq. meters</span>
+<span class="text-[#059669] font-medium flex items-center gap-1"><span class="material-symbols-outlined text-sm">bolt</span> 100% Hydro-Powered</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline block">Contingency Backup Facility</span>
+<h4 class="font-headline-md text-headline-md text-on-surface font-semibold mt-1">Nuremberg Electronics Plant 4 (Bavaria)</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Secondary certified tooling and duplicate assembly line calibrated for hot-standby production failover in under 72 hours.</p>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-on-surface flex items-center gap-1"><span class="material-symbols-outlined text-sm text-secondary">verified_user</span> Hot-Standby Active</span>
+<span class="text-outline">Last drill: Feb 2024</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Micro-script for responsive tab switching -->
+<script>
+    function switchTab(tabId) {
+      // Hide all panes
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      // Remove active states from buttons
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('text-primary', 'border-b-2', 'border-primary', 'bg-surface-container-lowest', 'font-semibold');
+        btn.classList.add('text-on-surface-variant', 'font-medium');
+      });
+
+      // Show targeted pane
+      const targetPane = document.getElementById('tab-' + tabId);
+      if (targetPane) targetPane.classList.remove('hidden');
+
+      // Highlight targeted button
+      const targetBtn = document.getElementById('tab-btn-' + tabId);
+      if (targetBtn) {
+        targetBtn.classList.remove('text-on-surface-variant', 'font-medium');
+        targetBtn.classList.add('text-primary', 'border-b-2', 'border-primary', 'bg-surface-container-lowest', 'font-semibold');
+      }
+    }
+  </script>
+</div></main></div></body></html>
