@@ -430,6 +430,50 @@ DEMO_PROJECTS = {"lena.weber@railco.eu": [
 ]}
 
 
+def _demo(pid, name, created, items, eu, priority, pdf=None):
+    lines = "\n".join(f"• {i['item']} × {i['quantity']} ({i['category']}, by {i['needed_by']})" for i in items)
+    first = {"role": "user", "text": f"Uploaded: {pdf}"} if pdf else {"role": "user", "text": "; ".join(f"{i['quantity']} {i['item']}" for i in items) + f", needed by {items[-1]['needed_by']}"}
+    src = f"I read {pdf} (NVIDIA OCR). " if pdf else ""
+    return {"id": pid, "name": name, "created": created, "phase": "results", "showed": True, "step": "ready", "eu_only": eu,
+            "priority": priority, "per_item": 8, "items": items, "messages": [
+                _bot(f'Let\'s set up "{name}".\n\nWhat kind of items do you want to buy for this project? Describe them or upload your item list as a PDF.'),
+                first,
+                _bot(f"{src}I found {len(items)} item(s):\n{lines}\n\nAny sourcing constraints, for example supplier location?"),
+                {"role": "user", "text": "EU suppliers only" if eu else "No location constraint"},
+                _bot("Noted. What matters most when choosing between suppliers?"),
+                {"role": "user", "text": priority},
+                _bot(f"Thanks. Summary of the request:\n• {len(items)} item(s): {', '.join(i['item'] for i in items)}\n• Suppliers: {'EU only' if eu else 'any location'}\n• Priority: {priority.lower()}\n\nI can now look up which suppliers can deliver each item and assess their risk.", ["Build dashboards", "Add more items"])]}
+
+
+def _it(item, cat, qty, by):
+    return {"item": item, "category": cat, "quantity": qty, "needed_by": by}
+
+
+DEMO_PROJECTS.update({
+    "jonas.richter@railco.eu": [
+        _demo("demo-jr-1", "Single-source risk review: brakes & traction", "2026-10-12",
+              [_it("Brake control unit BCU-7", "Brake systems", 240, "2027-03"), _it("Traction converter", "Traction & propulsion", 120, "2027-06")], False, "Lowest risk"),
+        _demo("demo-jr-2", "Signalling resilience check ETCS", "2026-10-15",
+              [_it("ETCS onboard unit", "Signalling & ETCS", 60, "2027-02"), _it("Balise transmission module", "Signalling & ETCS", 120, "2027-02"),
+               _it("Pantograph", "Pantographs & HV equipment", 120, "2027-05")], True, "Delivery reliability", "risk_review_request.pdf")],
+    "sara.okafor@railco.eu": [
+        _demo("demo-so-1", "LkSG due diligence: couplers & castings", "2026-10-11",
+              [_it("Coupler head", "Couplers & draft gear", 240, "2027-04"), _it("Forged axle box", "Castings & forgings", 960, "2027-04")], True, "Lowest risk"),
+        _demo("demo-so-2", "Sustainable interiors tender", "2026-10-16",
+              [_it("Passenger seat module", "Interior & seating", 6000, "2027-08"), _it("Cable harness", "Cables & connectors", 1200, "2027-06")], True, "Lowest risk", "interiors_tender.pdf")],
+    "martin.klein@railco.eu": [
+        _demo("demo-mk-1", "High-spend bogies & traction 2027", "2026-10-10",
+              [_it("Bogie frame (motor)", "Bogies & wheelsets", 480, "2027-04"), _it("Traction motor", "Traction & propulsion", 480, "2027-06")], False, "Proven high volume"),
+        _demo("demo-mk-2", "Cost-down: fasteners & logistics", "2026-10-17",
+              [_it("Fastener kit", "Fasteners & MRO consumables", 20000, "2027-01"), _it("Inbound logistics service", "Logistics services", 12, "2027-01")], False, "Proven high volume")],
+    "aylin.demir@railco.eu": [
+        _demo("demo-ad-1", "Spare parts: doors & HVAC", "2026-10-13",
+              [_it("Door drive unit DDU-4", "Doors & access systems", 200, "2027-01"), _it("HVAC roof unit", "HVAC", 40, "2027-02")], False, "Delivery reliability"),
+        _demo("demo-ad-2", "Overhaul kit: pantographs & brake pads", "2026-10-16",
+              [_it("Pantograph carbon strip", "Pantographs & HV equipment", 800, "2027-03"), _it("Brake pad set", "Brake systems", 2400, "2027-03")], True, "Delivery reliability", "overhaul_kit_list.pdf")],
+})
+
+
 def _mine(allp: dict, email: str) -> list:
     import copy
     return allp[email] if email in allp else copy.deepcopy(DEMO_PROJECTS.get(email, []))

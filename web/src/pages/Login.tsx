@@ -65,10 +65,12 @@ export default function Login({ configure }: { configure: boolean }) {
               {err && <div className="mt-2 text-sm text-crit">{err}</div>}
               <button className="btn btn-primary mt-5 w-full justify-center !py-2.5" disabled={!email}><LogIn size={16} /> Sign in</button>
               <div className="mt-6 rounded bg-canvas p-3">
-                <div className="label mb-1.5">Demo accounts (prototype: no real authentication)</div>
+                <div className="label mb-1.5">Demo accounts: one click to sign in (prototype, no real authentication)</div>
                 {accounts.map((a) => (
-                  <button type="button" key={a.email} onClick={() => setEmail(a.email)} className="flex w-full justify-between py-0.5 text-left font-mono text-[11px] hover:text-petrol">
-                    <span>{a.email}</span><span className="text-muted">{a.role}</span></button>))}
+                  <button type="button" key={a.email} onClick={async () => { setEmail(a.email); app.signIn(await api.login(a.email)); }}
+                    className="mb-1 flex w-full items-center justify-between rounded border border-line bg-white px-2.5 py-1.5 text-left hover:border-petrol hover:bg-tint">
+                    <span><span className="text-sm font-semibold">{a.name}</span><span className="block font-mono text-[10px] text-muted">{a.email}</span></span>
+                    <span className="flex items-center gap-1.5 text-xs text-petrol">{a.role}<LogIn size={13} /></span></button>))}
               </div>
             </form>
           )}
