@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SupplyGuard System Showcase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060c0e; --panel:#0d181b; --panel2:#112024; --line:#1f3439; --line2:#2b474d;
+  --text:#e8f1f2; --muted:#8aa3a8; --dim:#5d777c;
+  --teal:#2dd4bf; --teal2:#14b8a6; --petrol:#0f766e;
+  --nv:#76b900; --nebius:#c7f25e; --tavily:#5b8cff; --mail:#f5a524; --doc:#c084fc;
+  --crit:#f43f5e; --high:#fb923c; --med:#facc15; --low:#34d399;
+  --mono:"JetBrains Mono",ui-monospace,monospace; --sans:Inter,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
+#viewport{position:fixed;inset:0;display:grid;place-items:center}
+#stage{width:1600px;height:900px;position:relative;transform-origin:center;flex:none;
+  background:radial-gradient(1200px 700px at 85% -10%,rgba(45,212,191,.10),transparent 60%),
+             radial-gradient(900px 600px at -10% 110%,rgba(15,118,110,.18),transparent 60%),var(--bg);
+  border-radius:6px;overflow:hidden}
+#stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:80px 80px;mask-image:radial-gradient(ellipse at center,#000 20%,transparent 75%)}
+
+.slide{position:absolute;inset:0;padding:64px 80px 70px;opacity:0;pointer-events:none;transition:opacity .6s ease}
+.slide.on{opacity:1;pointer-events:auto}
+.kicker{font-family:var(--mono);font-size:15px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);display:flex;gap:14px;align-items:center}
+.kicker .n{color:var(--dim)}
+h1{font-size:96px;font-weight:800;letter-spacing:-.035em;line-height:1}
+h2{font-size:50px;font-weight:750;letter-spacing:-.025em;line-height:1.08;margin-top:14px;max-width:1440px}
+h3{font-size:22px;font-weight:700;letter-spacing:-.01em}
+p.lead{font-size:22px;color:var(--muted);line-height:1.45;margin-top:14px;max-width:1150px}
+.hl{color:var(--teal)}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line2);border-radius:16px;padding:22px 24px}
+.chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:13px;padding:5px 10px;border-radius:999px;border:1px solid var(--line2);background:#0a1517;color:var(--muted);white-space:nowrap}
+.chip i{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+.c-nv{color:var(--nv);border-color:rgba(118,185,0,.45)}
+.c-neb{color:var(--nebius);border-color:rgba(199,242,94,.4)}
+.c-tav{color:var(--tavily);border-color:rgba(91,140,255,.45)}
+.c-mail{color:var(--mail);border-color:rgba(245,165,36,.45)}
+.c-doc{color:var(--doc);border-color:rgba(192,132,252,.45)}
+.c-teal{color:var(--teal);border-color:rgba(45,212,191,.45)}
+.tag-sim{font-family:var(--mono);font-size:11px;color:var(--med);border:1px solid rgba(250,204,21,.35);border-radius:4px;padding:1px 6px}
+
+/* reveal animations: run each time a slide becomes active */
+.r{opacity:0;transform:translateY(18px)}
+.slide.on .r{animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(var(--d,0) * 1s)}
+.slide.on .pop{animation:pop .55s cubic-bezier(.2,.9,.3,1.3) forwards;animation-delay:calc(var(--d,0) * 1s)}
+.pop{opacity:0;transform:scale(.85)}
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes pop{to{opacity:1;transform:none}}
+.slide.on .draw{stroke-dasharray:var(--len,600);stroke-dashoffset:var(--len,600);animation:draw 1s ease forwards;animation-delay:calc(var(--d,0) * 1s)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.flow{stroke-dasharray:6 8;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-28}}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+
+/* chrome */
+#bar{position:absolute;left:0;bottom:0;height:4px;background:var(--teal);transition:width .5s ease;z-index:5}
+#foot{position:absolute;left:80px;right:80px;bottom:24px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;color:var(--dim);z-index:5}
+#foot b{color:var(--muted);font-weight:500}
+#hint{position:fixed;right:16px;bottom:14px;font:12px var(--mono);color:var(--dim);background:rgba(13,24,27,.85);border:1px solid var(--line);border-radius:8px;padding:8px 12px;transition:opacity .3s;z-index:10}
+body.clean #hint,body.clean #foot{opacity:0}
+
+/* slide 1 */
+.s1-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:64px}
+.stat .v{font-size:54px;font-weight:800;letter-spacing:-.03em}
+.stat .l{font-size:16px;color:var(--muted);margin-top:6px;line-height:1.35}
+.partners{display:flex;gap:12px;margin-top:46px;flex-wrap:wrap}
+.partners .chip{font-size:15px;padding:8px 14px}
+
+/* problem */
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:50px}
+.three .card{min-height:360px;display:flex;flex-direction:column;gap:14px}
+.big{font-size:64px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.card p{font-size:18px;color:var(--muted);line-height:1.5}
+.mini-score{display:flex;gap:4px;align-items:flex-end;height:90px;margin-top:auto}
+.mini-score span{flex:1;border-radius:3px 3px 0 0;background:var(--line2)}
+
+/* solution flow */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:70px;position:relative}
+.step{position:relative;padding:0 14px}
+.step .dot{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font:700 24px var(--mono);background:var(--panel2);border:1px solid var(--line2);color:var(--teal);position:relative;z-index:2}
+.step h3{margin-top:22px;font-size:24px}
+.step p{margin-top:10px;font-size:17px;color:var(--muted);line-height:1.5}
+.step .chip{margin-top:14px}
+.steps svg{position:absolute;left:60px;right:60px;top:31px;width:calc(100% - 120px);height:4px;overflow:visible}
+
+/* architecture */
+#arch{position:absolute;left:60px;top:190px;width:1480px;height:650px}
+#arch text{font-family:var(--sans);fill:var(--text)}
+#arch .t-m{font-family:var(--mono);font-size:13px;fill:var(--muted)}
+#arch .t-h{font-size:19px;font-weight:700}
+#arch .t-s{font-size:14px;fill:var(--muted)}
+#arch rect.box{fill:#0d181b;stroke:var(--line2);stroke-width:1.2}
+
+/* trace */
+.split{display:grid;grid-template-columns:560px 1fr;gap:34px;margin-top:36px}
+.code{font-family:var(--mono);font-size:15px;line-height:1.65;color:#b9cdd0;background:#081113;border:1px solid var(--line);border-radius:14px;padding:22px 24px;white-space:pre}
+.code .k{color:var(--teal)} .code .c{color:var(--dim)} .code .s{color:#f0c674} .code .f{color:#9ecbff}
+.trace{background:#081113;border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-family:var(--mono);font-size:14.5px;height:610px;overflow:hidden}
+.trace .q{font-family:var(--sans);font-size:18px;color:var(--text);padding:10px 14px;background:var(--panel2);border-radius:10px;margin-bottom:14px;border:1px solid var(--line2)}
+.ev{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed #13262a}
+.ev .a{flex:none;width:96px;text-align:center;font-size:11.5px;font-weight:600;border-radius:5px;padding:3px 0;margin-top:1px}
+.ev .k{flex:none;width:92px;color:var(--dim);font-size:12px;margin-top:2px}
+.ev .x{color:#c6d7da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-sup{background:rgba(45,212,191,.14);color:var(--teal)}
+.a-data{background:rgba(52,211,153,.12);color:var(--low)}
+.a-doc{background:rgba(192,132,252,.14);color:var(--doc)}
+.a-mail{background:rgba(245,165,36,.14);color:var(--mail)}
+.a-web{background:rgba(91,140,255,.15);color:var(--tavily)}
+
+/* data tools */
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:30px}
+.tool{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tool b{font-family:var(--mono);font-size:15px;color:var(--low);font-weight:600}
+.tool div{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.4}
+.formula{font-family:var(--mono);font-size:26px;margin-top:4px}
+.wrow{display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:center;margin-top:9px}
+.wrow .w{font-family:var(--mono);font-size:15px;color:var(--teal)}
+.wb{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.wbar{flex:none;height:22px;border-radius:5px;background:linear-gradient(90deg,var(--petrol),var(--teal2));transform-origin:left;transform:scaleX(0)}
+.slide.on .wbar{animation:grow .8s ease forwards;animation-delay:calc(var(--d,0) * 1s)}
+@keyframes grow{to{transform:scaleX(1)}}
+
+/* pipelines */
+.pipe{display:flex;align-items:stretch;gap:0;margin-top:34px}
+.pnode{flex:1;background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:16px 16px;position:relative;min-height:160px}
+.pnode .ic{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.1em}
+.pnode h3{font-size:19px;margin-top:6px}
+.pnode p{font-size:14.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+.arrow{flex:none;width:44px;display:grid;place-items:center;color:var(--teal);font-size:24px}
+.pnode.nv{border-color:rgba(118,185,0,.55);box-shadow:0 0 0 1px rgba(118,185,0,.15),0 0 40px rgba(118,185,0,.08)}
+.pnode.tav{border-color:rgba(91,140,255,.55);box-shadow:0 0 40px rgba(91,140,255,.08)}
+.pnode.mail{border-color:rgba(245,165,36,.5)}
+.json{font-family:var(--mono);font-size:14px;line-height:1.6;color:#b9cdd0;background:#081113;border:1px solid var(--line);border-radius:12px;padding:16px 18px;white-space:pre}
+.json .k{color:#9ecbff} .json .s{color:#f0c674} .json .n{color:var(--teal)}
+
+/* email */
+.mail{background:#f6f4ef;color:#1d2427;border-radius:14px;padding:20px 22px;font-size:15px;line-height:1.5;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.mail .h{font-size:13px;color:#5b6468;font-family:var(--mono)}
+.mail .sub{font-weight:700;font-size:17px;margin:6px 0 10px}
+.mail mark{background:#ffe08a;padding:0 3px;border-radius:3px}
+.delta{display:flex;align-items:center;gap:16px}
+.delta .b{font-size:46px;font-weight:800;letter-spacing:-.03em}
+.metric{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:16px 18px}
+.metric .lbl{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+
+/* gen UI */
+.ws{background:#0a1416;border:1px solid var(--line2);border-radius:14px;padding:16px;height:100%}
+.ws .tt{font-weight:750;font-size:21px}
+.ws .gr{font-size:14px;color:var(--teal);margin-top:3px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 10px}
+.kpi .l{font-family:var(--mono);font-size:10.5px;color:var(--dim);text-transform:uppercase}
+.kpi .v{font-size:20px;font-weight:750;margin-top:3px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px;color:var(--muted)}
+.panel b{color:var(--text);font-size:14px}
+
+.rt{width:100%;border-collapse:collapse;font-size:15px}
+.rt th{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);text-align:left;padding:0 12px 10px}
+.rt td{padding:12px;border-top:1px solid var(--line);vertical-align:top}
+.rt td i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+
+/* partners */
+.pgrid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:22px;margin-top:40px}
+.pcard{border-radius:18px;padding:26px 26px;border:1px solid var(--line2);background:linear-gradient(180deg,var(--panel2),var(--panel));min-height:470px;display:flex;flex-direction:column}
+.pcard .logo{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.pcard ul{list-style:none;margin-top:18px;display:flex;flex-direction:column;gap:12px}
+.pcard li{font-size:16px;line-height:1.45;color:var(--muted);padding-left:18px;position:relative}
+.pcard li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:7px;border-radius:2px;background:currentColor;opacity:.8}
+.pcard li b{color:var(--text)}
+.model{font-family:var(--mono);font-size:12.5px;white-space:nowrap;background:#081113;border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#cde;margin-top:8px}
+.model span{color:var(--dim)}
+
+/* trust */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+.tgrid .card{min-height:200px}
+.tgrid .card .no{font-family:var(--mono);font-size:13px;color:var(--teal)}
+.tgrid .card h3{margin-top:10px}
+.tgrid .card p{font-size:16px;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- 1 · TITLE -->
+<section class="slide" data-dur="8">
+  <div class="kicker r" style="--d:.1"><span>Agentic supplier risk for rail</span><span class="n">· Project sponsor: Siemens Mobility · Nebius Build Week × NVIDIA · Berlin 2026</span></div>
+  <h1 class="r" style="--d:.25;margin-top:70px">Supply<span class="hl">Guard</span></h1>
+  <p class="lead r" style="--d:.45;font-size:30px;color:var(--text);max-width:1200px;margin-top:26px">One question. A supervisor and four specialist agents. A workspace that builds itself for <span class="hl">your</span> role.</p>
+  <div class="s1-grid">
+    <div class="stat card r" style="--d:.7"><div class="v">10,000</div><div class="l">rail suppliers, 18 risk factors each</div></div>
+    <div class="stat card r" style="--d:.85"><div class="v" style="color:var(--crit)">911</div><div class="l">hidden risks: rated Low/Medium overall, Critical on one factor</div></div>
+    <div class="stat card r" style="--d:1"><div class="v">€20.4B</div><div class="l">annual purchase-order volume in the portfolio</div></div>
+    <div class="stat card r" style="--d:1.15"><div class="v" style="color:var(--high)">€10.3B</div><div class="l">risk-weighted exposure (spend × risk index)</div></div>
+  </div>
+  <div class="partners r" style="--d:1.4">
+    <span class="chip c-nv"><i></i>NVIDIA Nemotron</span>
+    <span class="chip c-neb"><i></i>Nebius Token Factory</span>
+    <span class="chip c-neb"><i></i>Nebius Cloud</span>
+    <span class="chip c-tav"><i></i>Tavily</span>
+    <span class="chip c-teal"><i></i>FastAPI · React · d3</span>
+  </div>
+</section>
+
+<!-- 2 · PROBLEM -->
+<section class="slide" data-dur="9">
+  <div class="kicker r"><span class="n">01</span><span>The problem</span></div>
+  <h2 class="r" style="--d:.15">Procurement teams see a score. They don't see <span class="hl">why</span>, or what changed this morning.</h2>
+  <div class="three">
+    <div class="card r" style="--d:.4">
+      <div class="big" style="color:var(--crit)">911</div>
+      <h3>Headline scores hide risk</h3>
+      <p>Suppliers rated Low or Medium overall carry a <b style="color:var(--crit)">Critical</b> sub-score: finances, quality, compliance. A single total averages the danger away.</p>
+      <div class="mini-score">
+        <span style="height:30%"></span><span style="height:22%"></span><span style="height:96%;background:var(--crit)"></span><span style="height:35%"></span><span style="height:28%"></span><span style="height:40%"></span><span style="height:18%"></span><span style="height:33%"></span><span style="height:25%"></span>
+      </div>
+    </div>
+    <div class="card r" style="--d:.6">
+      <div class="big" style="color:var(--mail)">4+</div>
+      <h3>Signals are scattered</h3>
+      <p>Audit PDFs, scanned certificates, supplier emails about delays, news on strikes and commodity prices. Each lives in a different place, and nobody connects them to the risk score.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:auto"><span class="chip c-doc">scanned PDFs</span><span class="chip c-mail">supplier emails</span><span class="chip c-tav">news &amp; markets</span><span class="chip c-teal">dataset</span></div>
+    </div>
+    <div class="card r" style="--d:.8">
+      <div class="big" style="color:var(--tavily)">5</div>
+      <h3>One dashboard fits nobody</h3>
+      <p>The risk manager, strategic buyer, CFO, ESG officer and maintenance engineer ask different questions of the same data. Static dashboards serve none of them well.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:auto"><span class="chip">Risk</span><span class="chip">Buyer</span><span class="chip">CFO</span><span class="chip">ESG</span><span class="chip">Engineer</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · SOLUTION FLOW -->
+<section class="slide" data-dur="10">
+  <div class="kicker r"><span class="n">02</span><span>How we solve it</span></div>
+  <h2 class="r" style="--d:.15">Ask in plain language. Agents gather the evidence. <span class="hl">Exact maths</span> does the numbers. You approve.</h2>
+  <div class="steps">
+    <svg viewBox="0 0 1000 4" preserveAspectRatio="none"><line x1="0" y1="2" x2="1000" y2="2" stroke="#2b474d" stroke-width="2"/><line class="draw" style="--len:1000;--d:.5" x1="0" y1="2" x2="1000" y2="2" stroke="#2dd4bf" stroke-width="3"/></svg>
+    <div class="step r" style="--d:.5"><div class="dot">1</div><h3>Ask</h3><p>Describe a procurement request in chat, upload an item list as a PDF, or let an incoming supplier email trigger it.</p><span class="chip c-teal">React · SSE</span></div>
+    <div class="step r" style="--d:.8"><div class="dot">2</div><h3>Plan</h3><p>The Supervisor reads the user's role, focus and notes, then decides which sources it needs.</p><span class="chip c-nv"><i></i>Nemotron 3 Super</span></div>
+    <div class="step r" style="--d:1.1"><div class="dot">3</div><h3>Fan out</h3><p>One <span class="mono">delegate</span> call starts the Data, Document, Email and Web agents in parallel threads.</p><span class="chip c-teal">4 agents · parallel</span></div>
+    <div class="step r" style="--d:1.4"><div class="dot">4</div><h3>Ground</h3><p>Agents call tools: exact risk maths, OCR'd documents, the email connector and Tavily search. Every claim gets a citation.</p><span class="chip c-tav"><i></i>Tavily</span></div>
+    <div class="step r" style="--d:1.7"><div class="dot">5</div><h3>Compose &amp; act</h3><p>A role-specific workspace and answer, with recommended actions that wait for a human to approve them.</p><span class="chip c-teal">Generated UI</span></div>
+  </div>
+</section>
+
+<!-- 4 · ARCHITECTURE -->
+<section class="slide" data-dur="12">
+  <div class="kicker r"><span class="n">03</span><span>System architecture</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">One supervisor, four specialists, all on open models.</h2>
+  <svg id="arch" viewBox="0 0 1480 650">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#2dd4bf"/></marker>
+      <path id="p-ui-api" d="M250,270 L320,270"/>
+      <path id="p-api-sup" d="M500,270 L560,270"/>
+      <path id="p-s-data" d="M780,250 C810,250 810,85 840,85"/>
+      <path id="p-s-doc" d="M780,262 C810,262 810,240 840,240"/>
+      <path id="p-s-mail" d="M780,278 C810,278 810,395 840,395"/>
+      <path id="p-s-web" d="M780,290 C810,290 810,550 840,550"/>
+      <path id="p-data-c" d="M1050,85 L1110,85"/>
+      <path id="p-doc-c" d="M1050,240 L1110,240"/>
+      <path id="p-mail-c" d="M1050,395 L1110,395"/>
+      <path id="p-web-c" d="M1050,550 L1110,550"/>
+    </defs>
+
+    <!-- UI -->
+    <g class="r" style="--d:.3">
+      <rect class="box" x="20" y="90" width="230" height="360" rx="14"/>
+      <text x="40" y="126" class="t-h">React UI</text>
+      <text x="40" y="148" class="t-m">Vite · Tailwind · d3</text>
+      <g font-size="15">
+        <rect x="38" y="170" width="194" height="40" rx="8" fill="#112024"/><text x="52" y="196">Home · supervisor chat</text>
+        <rect x="38" y="218" width="194" height="40" rx="8" fill="#112024"/><text x="52" y="244">Request workspace</text>
+        <rect x="38" y="266" width="194" height="40" rx="8" fill="#11202a" stroke="#2dd4bf" stroke-opacity=".5"/><text x="52" y="292" fill="#2dd4bf">Radial supplier tree</text>
+        <rect x="38" y="314" width="194" height="40" rx="8" fill="#112024"/><text x="52" y="340">Inbox · toast alerts</text>
+        <rect x="38" y="362" width="194" height="40" rx="8" fill="#112024"/><text x="52" y="388">Supplier dashboard</text>
+      </g>
+    </g>
+    <!-- API -->
+    <g class="r" style="--d:.5">
+      <rect class="box" x="320" y="150" width="180" height="240" rx="14"/>
+      <text x="338" y="186" class="t-h">FastAPI</text>
+      <text x="338" y="208" class="t-m">server-sent events</text>
+      <g class="t-m" style="font-size:12.5px">
+        <text x="338" y="244">/api/chat</text>
+        <text x="338" y="270">/api/generate-ui</text>
+        <text x="338" y="296">/api/email/*</text>
+        <text x="338" y="322">/api/procurement/*</text>
+        <text x="338" y="348">/api/user-projects</text>
+      </g>
+    </g>
+    <!-- Supervisor -->
+    <g class="r" style="--d:.7">
+      <rect x="560" y="190" width="220" height="160" rx="16" fill="#0f2226" stroke="#2dd4bf" stroke-width="1.6"/>
+      <text x="580" y="228" class="t-h" fill="#2dd4bf">Supervisor</text>
+      <text x="580" y="252" class="t-s">plans · delegates · writes</text>
+      <text x="580" y="272" class="t-s">the role-aware answer</text>
+      <rect x="578" y="292" width="184" height="36" rx="18" fill="rgba(118,185,0,.12)" stroke="#76b900" stroke-opacity=".6"/>
+      <text x="670" y="315" text-anchor="middle" class="t-m" style="fill:#76b900">Nemotron 3 Super</text>
+    </g>
+    <!-- Agents -->
+    <g class="r" style="--d:.9">
+      <rect class="box" x="840" y="30" width="210" height="110" rx="12" style="stroke:#34d399"/>
+      <text x="858" y="64" class="t-h" style="fill:#34d399">Data Agent</text>
+      <text x="858" y="88" class="t-s">risk maths · what-if</text>
+      <text x="858" y="110" class="t-s">alternatives · fleet impact</text>
+    </g>
+    <g class="r" style="--d:1.0">
+      <rect class="box" x="840" y="185" width="210" height="110" rx="12" style="stroke:#c084fc"/>
+      <text x="858" y="219" class="t-h" style="fill:#c084fc">Document Agent</text>
+      <text x="858" y="243" class="t-s">audits · certificates</text>
+      <text x="858" y="265" class="t-s">contracts · OCR scans</text>
+    </g>
+    <g class="r" style="--d:1.1">
+      <rect class="box" x="840" y="340" width="210" height="110" rx="12" style="stroke:#f5a524"/>
+      <text x="858" y="374" class="t-h" style="fill:#f5a524">Email Agent</text>
+      <text x="858" y="398" class="t-s">reads supplier mail</text>
+      <text x="858" y="420" class="t-s">recomputes risk</text>
+    </g>
+    <g class="r" style="--d:1.2">
+      <rect class="box" x="840" y="495" width="210" height="110" rx="12" style="stroke:#5b8cff"/>
+      <text x="858" y="529" class="t-h" style="fill:#5b8cff">Web Agent</text>
+      <text x="858" y="553" class="t-s">news · commodities</text>
+      <text x="858" y="575" class="t-s">regulation · regions</text>
+    </g>
+    <!-- Connectors -->
+    <g class="r" style="--d:1.4" font-size="14">
+      <rect class="box" x="1110" y="30" width="350" height="110" rx="12"/>
+      <text x="1128" y="60" class="t-m" style="fill:#34d399">8 TOOLS · EXACT</text>
+      <text x="1128" y="86">rank_suppliers · get_supplier · what_if</text>
+      <text x="1128" y="108" class="t-s">pandas over 10k-row dataset</text>
+      <text x="1128" y="128" class="t-s">+ SIMULATED enrichment (country, fleets)</text>
+
+      <rect class="box" x="1110" y="185" width="350" height="110" rx="12"/>
+      <text x="1128" y="215" class="t-m" style="fill:#c084fc">search_documents</text>
+      <text x="1128" y="241">Nemotron Parse OCR → chunks</text>
+      <text x="1128" y="263" class="t-s">PDF · images · DOCX · text</text>
+      <text x="1128" y="283" class="t-s">SHA-1 extraction cache</text>
+
+      <rect class="box" x="1110" y="340" width="350" height="110" rx="12"/>
+      <text x="1128" y="370" class="t-m" style="fill:#f5a524">EMAIL CONNECTOR (MCP-STYLE)</text>
+      <text x="1128" y="396">list_inbox · read_email · assess_delay</text>
+      <text x="1128" y="418" class="t-s">LLM extracts the event, rules + maths</text>
+      <text x="1128" y="438" class="t-s">recompute risk</text>
+
+      <rect class="box" x="1110" y="495" width="350" height="110" rx="12"/>
+      <text x="1128" y="525" class="t-m" style="fill:#5b8cff">web_search</text>
+      <text x="1128" y="551">Tavily Search API</text>
+      <text x="1128" y="573" class="t-s">topic = news · include_answer</text>
+      <text x="1128" y="593" class="t-s">cached per query</text>
+    </g>
+
+    <!-- lines -->
+    <g fill="none" stroke="#2dd4bf" stroke-width="2" opacity=".85">
+      <use href="#p-ui-api" class="flow"/><use href="#p-api-sup" class="flow"/>
+      <use href="#p-s-data" class="flow" stroke="#34d399"/><use href="#p-s-doc" class="flow" stroke="#c084fc"/>
+      <use href="#p-s-mail" class="flow" stroke="#f5a524"/><use href="#p-s-web" class="flow" stroke="#5b8cff"/>
+      <use href="#p-data-c" class="flow" stroke="#34d399"/><use href="#p-doc-c" class="flow" stroke="#c084fc"/>
+      <use href="#p-mail-c" class="flow" stroke="#f5a524"/><use href="#p-web-c" class="flow" stroke="#5b8cff"/>
+    </g>
+    <!-- packets -->
+    <g>
+      <circle r="5" fill="#2dd4bf"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#p-ui-api"/></animateMotion></circle>
+      <circle r="5" fill="#2dd4bf"><animateMotion dur="1.4s" begin=".3s" repeatCount="indefinite"><mpath href="#p-api-sup"/></animateMotion></circle>
+      <circle r="5" fill="#34d399"><animateMotion dur="2s" repeatCount="indefinite"><mpath href="#p-s-data"/></animateMotion></circle>
+      <circle r="5" fill="#c084fc"><animateMotion dur="2s" begin=".2s" repeatCount="indefinite"><mpath href="#p-s-doc"/></animateMotion></circle>
+      <circle r="5" fill="#f5a524"><animateMotion dur="2s" begin=".4s" repeatCount="indefinite"><mpath href="#p-s-mail"/></animateMotion></circle>
+      <circle r="5" fill="#5b8cff"><animateMotion dur="2s" begin=".6s" repeatCount="indefinite"><mpath href="#p-s-web"/></animateMotion></circle>
+      <circle r="4" fill="#34d399"><animateMotion dur="1.2s" repeatCount="indefinite"><mpath href="#p-data-c"/></animateMotion></circle>
+      <circle r="4" fill="#c084fc"><animateMotion dur="1.2s" begin=".3s" repeatCount="indefinite"><mpath href="#p-doc-c"/></animateMotion></circle>
+      <circle r="4" fill="#f5a524"><animateMotion dur="1.2s" begin=".6s" repeatCount="indefinite"><mpath href="#p-mail-c"/></animateMotion></circle>
+      <circle r="4" fill="#5b8cff"><animateMotion dur="1.2s" begin=".9s" repeatCount="indefinite"><mpath href="#p-web-c"/></animateMotion></circle>
+    </g>
+    <!-- LLM band -->
+    <g class="r" style="--d:1.6">
+      <rect x="320" y="470" width="460" height="135" rx="14" fill="rgba(118,185,0,.06)" stroke="#76b900" stroke-opacity=".55" stroke-dasharray="5 5"/>
+      <text x="340" y="502" class="t-h" style="fill:#76b900">LLM layer · OpenAI-compatible</text>
+      <text x="340" y="528" class="t-s">Nebius Token Factory  |  NVIDIA API (build.nvidia.com)</text>
+      <text x="340" y="556" class="t-m">nemotron-3-super-120b · 3.5-lightning-30b</text>
+      <text x="340" y="580" class="t-m">nemotron-parse · 3.5-super-vl-120b</text>
+      <path d="M670,350 L670,470" stroke="#76b900" stroke-width="1.6" stroke-dasharray="4 5" fill="none" class="flow"/>
+      <path d="M410,390 L410,470" stroke="#76b900" stroke-width="1.6" stroke-dasharray="4 5" fill="none" class="flow"/>
+      <text x="420" y="440" class="t-m" style="fill:#76b900;font-size:11.5px">UI spec</text>
+      <text x="660" y="440" text-anchor="end" class="t-m" style="fill:#76b900;font-size:11.5px">reasoning + tool calls</text>
+    </g>
+    <g class="r" style="--d:1.8">
+      <text x="20" y="560" class="t-m">Deployed on a Nebius Cloud CPU VM</text>
+      <text x="20" y="582" class="t-m">systemd + Caddy (auto HTTPS)</text>
+    </g>
+  </svg>
+</section>
+
+<!-- 5 · AGENT LOOP + TRACE -->
+<section class="slide" data-dur="13">
+  <div class="kicker r"><span class="n">04</span><span>Agent orchestration</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">Every agent step streams to the UI as it happens.</h2>
+  <div class="split">
+    <div>
+      <div class="code r" style="--d:.35"><span class="c"># agents.py: one generic tool-calling loop</span>
+<span class="k">def</span> <span class="f">_loop</span>(agent, system, task, tools, model):
+  <span class="k">for</span> _ <span class="k">in</span> range(MAX_STEPS):        <span class="c"># max 6</span>
+    msg = chat(model, msgs, tools)
+    <span class="k">if not</span> msg.tool_calls:
+      emit(agent, <span class="s">"answer"</span>, msg.content)
+      <span class="k">return</span>
+    <span class="c"># tool calls run in parallel threads</span>
+    emit(agent, <span class="s">"tool_call"</span>, ...)
+    emit(agent, <span class="s">"tool_result"</span>, ...)
+
+<span class="c"># Supervisor gets ONE tool: delegate</span>
+<span class="f">delegate</span>(data_task, document_task,
+         email_task, web_task)
+  → ThreadPoolExecutor → 4 × _loop</div>
+      <div class="r" style="--d:.6;display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
+        <span class="chip c-teal">OpenAI tool-calling schema</span>
+        <span class="chip c-teal">SSE: plan · tool_call · tool_result · answer</span>
+        <span class="chip c-nv"><i></i>thinking off for speed</span>
+      </div>
+    </div>
+    <div class="trace r" style="--d:.3">
+      <div class="q">Q&nbsp; Which brake suppliers should I worry about this week? <span class="muted" style="font-size:14px">· Risk Manager</span></div>
+      <div class="ev r" style="--d:.9"><span class="a a-sup">Supervisor</span><span class="k">plan</span><span class="x">Sources available: data, email, docs, web</span></div>
+      <div class="ev r" style="--d:1.5"><span class="a a-sup">Supervisor</span><span class="k">tool_call</span><span class="x">→ <b>delegate</b>(data_task, document_task, email_task, web_task)</span></div>
+      <div class="ev r" style="--d:2.2"><span class="a a-data">Data</span><span class="k">tool_call</span><span class="x">→ <b>rank_suppliers</b>({"sort_by":"exposure","level":"High","n":10})</span></div>
+      <div class="ev r" style="--d:2.4"><span class="a a-doc">Document</span><span class="k">tool_call</span><span class="x">→ <b>search_documents</b>({"query":"brake audit finding"})</span></div>
+      <div class="ev r" style="--d:2.6"><span class="a a-mail">Email</span><span class="k">tool_call</span><span class="x">→ <b>list_inbox</b>({"unread_only":true})</span></div>
+      <div class="ev r" style="--d:2.8"><span class="a a-web">Web</span><span class="k">tool_call</span><span class="x">→ <b>web_search</b>({"query":"railway brake supplier disruption","topic":"news"})</span></div>
+      <div class="ev r" style="--d:3.5"><span class="a a-data">Data</span><span class="k">tool_call</span><span class="x">→ <b>get_supplier</b>({"supplier_id":"SUPP_09733"})</span></div>
+      <div class="ev r" style="--d:3.8"><span class="a a-mail">Email</span><span class="k">tool_call</span><span class="x">→ <b>assess_delay</b>({"supplier_id":"SUPP_01703","delay_weeks":6})</span></div>
+      <div class="ev r" style="--d:4.3"><span class="a a-doc">Document</span><span class="k">answer</span><span class="x">Audit cites cash-flow pressure… [doc: audit_report.pdf]</span></div>
+      <div class="ev r" style="--d:4.7"><span class="a a-web">Web</span><span class="k">answer</span><span class="x">2 contextual signals with sources [web: url]</span></div>
+      <div class="ev r" style="--d:5.1"><span class="a a-data">Data</span><span class="k">answer</span><span class="x">Top exposures, score breakdown, alternatives [data]</span></div>
+      <div class="ev r" style="--d:5.5"><span class="a a-mail">Email</span><span class="k">answer</span><span class="x">Risk 15 → 21, line stop 2 weeks [email: URGENT…]</span></div>
+      <div class="ev r" style="--d:6.2;border:none"><span class="a a-sup">Supervisor</span><span class="k">answer</span><span class="x" style="color:var(--teal)">Bottom line + evidence table + actions (need approval)</span></div>
+      <div class="r muted mono" style="--d:6.6;font-size:12px;margin-top:10px">Example trace, in the exact event format the Copilot page renders.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · DATA AGENT / DATABASE CALLS -->
+<section class="slide" data-dur="12">
+  <div class="kicker r"><span class="n">05</span><span>Data agent · database calls</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">The LLM picks the tool. The tool does the maths. <span class="hl">No guessing.</span></h2>
+  <div style="display:grid;grid-template-columns:1fr 600px;gap:36px;margin-top:6px">
+    <div>
+      <div class="tools">
+        <div class="tool r" style="--d:.4"><b>portfolio_overview</b><div>Spend, levels, hidden risks, exposure</div></div>
+        <div class="tool r" style="--d:.5"><b>rank_suppliers</b><div>Top-N by exposure, delivery, ESG…</div></div>
+        <div class="tool r" style="--d:.6"><b>get_supplier</b><div>Full profile + points per factor</div></div>
+        <div class="tool r" style="--d:.7"><b>compare_suppliers</b><div>2–6 suppliers side by side</div></div>
+        <div class="tool r" style="--d:.8"><b>what_if</b><div>Recompute risk if sub-scores change</div></div>
+        <div class="tool r" style="--d:.9"><b>find_alternatives</b><div>Lower-risk suppliers, same category</div></div>
+        <div class="tool r" style="--d:1.0"><b>risk_history</b><div>24-month trend <span class="tag-sim">SIMULATED</span></div></div>
+        <div class="tool r" style="--d:1.1"><b>fleet_impact</b><div>Fleets, lead time vs safety stock <span class="tag-sim">SIMULATED</span></div></div>
+      </div>
+      <div class="card r" style="--d:1.3;margin-top:22px">
+        <h3>Data layer</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px;font-size:15px;color:var(--muted);line-height:1.5">
+          <div><b style="color:var(--text)">Supplier dataset</b><br>10,000 rows × 46 columns, loaded once into pandas, with derived exposure, hidden-risk and priority flags</div>
+          <div><b style="color:var(--text)">Enrichment</b> <span class="tag-sim">SIMULATED</span><br>Country, part category, IRIS certification, fleet BOM, lead times, PO ledger</div>
+          <div><b style="color:var(--text)">App stores</b><br>Personas, buyer notes, saved procurement projects, extraction cache</div>
+        </div>
+      </div>
+    </div>
+    <div class="card r" style="--d:.5">
+      <div class="mono muted" style="font-size:13px;letter-spacing:.1em">REVERSE-ENGINEERED SCORE</div>
+      <div class="formula" style="margin-top:12px">Total = round( Σ w<sub>i</sub> · s<sub>i</sub> )</div>
+      <p style="font-size:15px;color:var(--muted);margin-top:8px">Least-squares fit over all 10,000 suppliers: RMSE 0.29, which is integer rounding. Every point of every score is traceable.</p>
+      <div style="margin-top:14px">
+        <div class="wrow"><span class="w">0.10</span><div class="wb"><div class="wbar" style="width:220px;--d:.9"></div>Operational · Financial · Quality</div></div>
+        <div class="wrow"><span class="w">0.08</span><div class="wb"><div class="wbar" style="width:176px;--d:1.0"></div>Compliance</div></div>
+        <div class="wrow"><span class="w">0.06</span><div class="wb"><div class="wbar" style="width:132px;--d:1.1"></div>Credit · Safety · Sub-tier</div></div>
+        <div class="wrow"><span class="w">0.05</span><div class="wb"><div class="wbar" style="width:110px;--d:1.2"></div>Geopolitical · Governance · ESG</div></div>
+        <div class="wrow"><span class="w">0.04</span><div class="wb"><div class="wbar" style="width:88px;--d:1.3"></div>Env · Labor · Digital · Political · Bench</div></div>
+        <div class="wrow"><span class="w">0.03</span><div class="wb"><div class="wbar" style="width:66px;--d:1.4"></div>Market · Media · Ext. intel</div></div>
+      </div>
+      <div class="r" style="--d:1.7;margin-top:18px;font-size:15px;color:var(--muted);line-height:1.5"><b style="color:var(--crit)">Hidden risk</b> = total &lt; 50 and any factor ≥ 75<br><b style="color:var(--high)">Exposure</b> = PO volume × total risk / 100</div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · DOCUMENT EXTRACTION -->
+<section class="slide" data-dur="12">
+  <div class="kicker r"><span class="n">06</span><span>Data extraction · OCR with NVIDIA Nemotron</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">Scanned audits and certificates become cited evidence.</h2>
+  <div class="pipe">
+    <div class="pnode r" style="--d:.4"><div class="ic">01 · INPUT</div><h3>Shared folder or upload</h3><p>Audits, certificates, contracts, finance, quality reports, procurement requests</p></div>
+    <div class="arrow r" style="--d:.5">→</div>
+    <div class="pnode r" style="--d:.6"><div class="ic">02 · ROUTE</div><h3>By file type</h3><p>Text, MD, CSV, DOCX read directly. PDFs with a text layer skip OCR. Scans render at 150 dpi, up to 10 pages</p></div>
+    <div class="arrow r" style="--d:.7">→</div>
+    <div class="pnode nv r" style="--d:.8"><div class="ic" style="color:var(--nv)">03 · OCR</div><h3>Nemotron Parse</h3><p>Page image sent in an &lt;img&gt; tag. A forced tool call (<span class="mono">markdown_no_bbox</span>) returns structured markdown. Nemotron VL is the fallback</p></div>
+    <div class="arrow r" style="--d:.9">→</div>
+    <div class="pnode r" style="--d:1.0"><div class="ic">04 · INDEX</div><h3>Cache &amp; chunk</h3><p>SHA-1 file hash cache, so each file is OCR'd once. 1,200-char chunks with 200-char overlap</p></div>
+    <div class="arrow r" style="--d:1.1">→</div>
+    <div class="pnode r" style="--d:1.2;border-color:rgba(192,132,252,.55)"><div class="ic" style="color:var(--doc)">05 · USE</div><h3>Document Agent</h3><p><span class="mono">search_documents</span> runs 2–3 keyword queries and quotes passages as <span class="mono">[doc: file]</span></p></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px">
+    <div class="card r" style="--d:1.5">
+      <h3>Procurement request → supplier map</h3>
+      <p style="font-size:16px;color:var(--muted);margin-top:10px;line-height:1.5">Upload a request PDF. Nemotron Parse reads it, then Nemotron 3 Super extracts the items into JSON and maps each one to a rail part category. Every item becomes a bubble of qualified suppliers, coloured by risk.</p>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><span class="chip c-nv"><i></i>nemotron-parse</span><span class="chip c-nv"><i></i>nemotron-3-super</span><span class="chip">keyword fallback if no LLM</span></div>
+    </div>
+    <div class="json r" style="--d:1.7"><span class="c" style="color:var(--dim)">// POST /api/procurement/upload → items</span>
+{<span class="k">"project"</span>: <span class="s">"RegioFlex"</span>,
+ <span class="k">"items"</span>: [{<span class="k">"item"</span>: <span class="s">"Brake control unit"</span>,
+            <span class="k">"category"</span>: <span class="s">"Brake systems"</span>,
+            <span class="k">"quantity"</span>: <span class="n">120</span>, <span class="k">"needed_by"</span>: <span class="s">"2027-W06"</span>}, …],
+ <span class="k">"parsed_by"</span>: <span class="s">"nvidia/nemotron-3-super-120b-a12b"</span>}</div>
+  </div>
+</section>
+
+<!-- 8 · TAVILY -->
+<section class="slide" data-dur="11">
+  <div class="kicker r"><span class="n">07</span><span>Web agent · Tavily news &amp; market signals</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">Live outside-in context, with a source behind every fact.</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:34px">
+    <div>
+      <div class="card r" style="--d:.4">
+        <div class="mono" style="font-size:13px;color:var(--high);letter-spacing:.08em">CHALLENGE</div>
+        <p style="margin-top:8px">Supplier names in the dataset are anonymised ("Elite Systems 250"), so searching by name returns nothing.</p>
+        <div class="mono" style="font-size:13px;color:var(--teal);letter-spacing:.08em;margin-top:18px">OUR APPROACH</div>
+        <p style="margin-top:8px">Search by <b style="color:var(--text)">part category + country + topic</b>. Report results as contextual signals, never as facts about a named supplier.</p>
+      </div>
+      <div class="r" style="--d:.7;margin-top:18px;display:flex;flex-direction:column;gap:10px">
+        <div class="mono muted" style="font-size:13px">3 parallel queries for a brake supplier in Belgium:</div>
+        <div class="chip c-tav" style="font-size:14px;justify-content:flex-start">railway brake systems supplier news 2026</div>
+        <div class="chip c-tav" style="font-size:14px;justify-content:flex-start">Belgium brake systems manufacturing supply chain disruption</div>
+        <div class="chip c-tav" style="font-size:14px;justify-content:flex-start">rail rolling stock brake systems shortage delay</div>
+      </div>
+    </div>
+    <div>
+      <div class="pipe" style="margin-top:0;flex-direction:column;gap:0">
+        <div class="pnode tav r" style="--d:.9;min-height:0"><div class="ic" style="color:var(--tavily)">TAVILY SEARCH</div><p style="margin-top:6px"><span class="mono">topic="news"</span> · <span class="mono">include_answer=True</span> · up to 10 results</p></div>
+        <div class="arrow r" style="--d:1;width:100%;height:32px">↓</div>
+        <div class="pnode r" style="--d:1.1;min-height:0"><div class="ic">NORMALISE · DEDUPE · CACHE</div><p style="margin-top:6px">{title, url, content, published_date}. Dedupe by URL, cache by query hash</p></div>
+        <div class="arrow r" style="--d:1.2;width:100%;height:32px">↓</div>
+        <div class="pnode r" style="--d:1.3;min-height:0"><div class="ic">USED BY</div><p style="margin-top:6px"><b style="color:var(--text)">Web Agent</b> answers cite <span class="mono">[web: url]</span>. The <b style="color:var(--text)">supplier deep dive</b> shows a news feed</p></div>
+      </div>
+      <div class="r" style="--d:1.5;display:flex;gap:8px;flex-wrap:wrap;margin-top:20px">
+        <span class="chip c-tav">disruptions &amp; strikes</span><span class="chip c-tav">steel · copper · commodities</span><span class="chip c-tav">CSDDD / LkSG regulation</span><span class="chip c-tav">regional events</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · EMAIL -->
+<section class="slide" data-dur="13">
+  <div class="kicker r"><span class="n">08</span><span>Email connector · risk that updates itself</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">A supplier emails a delay. Risk is recomputed in seconds.</h2>
+  <div style="display:grid;grid-template-columns:520px 60px 1fr;gap:0;margin-top:30px;align-items:start">
+    <div class="r" style="--d:.4">
+      <div class="mail">
+        <div class="h">from logistics@elite-systems-250.example · SUPP_01703</div>
+        <div class="sub">URGENT: delivery delay BCU-7 brake control units (PO-2026-48113)</div>
+        …deliveries of the BCU-7 brake control units under PO-2026-48113 (120 units, RegioFlex) will be delayed by <mark>approximately 6 weeks</mark>.<br><br>
+        Root cause: a furnace failure at our <mark>casting sub-supplier</mark>. Because of current <mark>cash-flow constraints</mark> the replacement castings can only be ordered against prepayment…
+      </div>
+      <div class="json r" style="--d:1.2;margin-top:16px;font-size:13px"><span style="color:var(--nv)">Nemotron extracts →</span>
+{<span class="k">"supplier_id"</span>: <span class="s">"SUPP_01703"</span>, <span class="k">"delay_weeks"</span>: <span class="n">6</span>,
+ <span class="k">"causes"</span>: [<span class="s">"sub_supplier"</span>, <span class="s">"cash_flow"</span>]}</div>
+    </div>
+    <div class="arrow r" style="--d:1.5;height:300px;font-size:32px">→</div>
+    <div>
+      <div class="card r" style="--d:1.7;padding:16px 20px">
+        <div class="mono muted" style="font-size:12.5px;letter-spacing:.06em">assess_delay(): RULE-BASED SCORE CHANGES, THEN EXACT RECOMPUTE</div>
+        <div style="font-size:15px;color:var(--muted);margin-top:8px;line-height:1.6">Operational Resilience <b style="color:var(--text)">+5 per week of delay</b> (max +30) · sub-supplier cause → Sub-Tier Visibility <b style="color:var(--text)">+15</b> · cash flow → Financial Health <b style="color:var(--text)">+15</b> · delivery −2.5 pts per week</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+        <div class="metric pop" style="--d:2.2"><div class="lbl">Total risk</div><div class="delta"><span class="b" style="color:var(--low)">15</span><span class="muted">→</span><span class="b" style="color:var(--med)">21</span></div></div>
+        <div class="metric pop" style="--d:2.4"><div class="lbl">Delivery rating</div><div class="delta"><span class="b">100%</span><span class="muted">→</span><span class="b" style="color:var(--high)">85%</span></div></div>
+        <div class="metric pop" style="--d:2.6"><div class="lbl">Line-stop risk</div><div style="font-size:40px;font-weight:800;color:var(--crit)">2 weeks</div><div class="muted" style="font-size:14px">6-week delay vs 4-week safety stock <span class="tag-sim">SIMULATED</span></div></div>
+        <div class="metric pop" style="--d:2.8"><div class="lbl">Recommendable</div><div class="delta"><span class="b" style="color:var(--low);font-size:36px">yes</span><span class="muted">→</span><span class="b" style="color:var(--crit);font-size:36px">no</span></div><div class="muted" style="font-size:14px">rule: risk &lt; 50 and delivery ≥ 90%</div></div>
+      </div>
+      <div class="card r" style="--d:3.2;margin-top:14px;padding:14px 18px;display:flex;align-items:center;gap:16px;font-size:15px">
+        <span class="mono muted" style="font-size:12px;flex:none">REGIOFLEX · BCU-7<br>RECOMMENDATION</span>
+        <span style="white-space:nowrap"><s class="muted">Elite Systems 250</s> <span class="mono" style="color:var(--low)">risk 15</span></span>
+        <span style="color:var(--teal);font-size:22px">→</span>
+        <span style="white-space:nowrap"><b>Global Group 863</b> <span class="mono" style="color:var(--med)">risk 42</span></span>
+        <span class="mono muted" style="font-size:12px;margin-left:auto;white-space:nowrap">SUPP_09615 · France · auto-replaced</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · GENERATIVE UI -->
+<section class="slide" data-dur="15">
+  <div class="kicker r"><span class="n">09</span><span>Generative UI · request workspace</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">Describe what you need. The workspace builds itself around it.</h2>
+  <div class="pipe" style="margin-top:24px">
+    <div class="pnode r" style="--d:.35;min-height:128px"><div class="ic">01 · INTAKE CHAT</div><p>Type the request or upload a PDF item list. Scans are read by Nemotron Parse</p></div>
+    <div class="arrow r" style="--d:.45">→</div>
+    <div class="pnode nv r" style="--d:.55;min-height:128px"><div class="ic" style="color:var(--nv)">02 · NEMOTRON 3 SUPER</div><p>Extracts items as JSON and maps each to a rail part category</p></div>
+    <div class="arrow r" style="--d:.65">→</div>
+    <div class="pnode r" style="--d:.75;min-height:128px"><div class="ic">03 · CONSTRAINTS</div><p>EU only? Priority: lowest risk, delivery reliability or proven volume</p></div>
+    <div class="arrow r" style="--d:.85">→</div>
+    <div class="pnode r" style="--d:.95;min-height:128px;border-color:rgba(45,212,191,.55)"><div class="ic" style="color:var(--teal)">04 · SUPPLIER TREE</div><p>Radial tree or bubbles: items → proven suppliers, coloured by risk</p></div>
+    <div class="arrow r" style="--d:1.05">→</div>
+    <div class="pnode r" style="--d:1.15;min-height:128px"><div class="ic">05 · RECOMMEND</div><p>Ranked only inside each item's branch. Priority adjusts the score; it never overrides risk</p></div>
+  </div>
+  <div style="display:grid;grid-template-columns:460px 1fr;gap:26px;margin-top:20px">
+    <div class="card r" style="--d:.9;padding:10px 14px;height:430px;position:relative">
+      <div class="mono muted" style="position:absolute;left:16px;top:12px;font-size:11.5px;line-height:1.5">RegioFlex · EU only<br>priority: lowest risk</div>
+      <div class="mono muted" style="position:absolute;right:16px;top:12px;font-size:11.5px;text-align:right;line-height:1.5">dot = risk · bar = PO volume<br>ringed = recommended</div>
+      <svg viewBox="0 0 460 430" style="width:100%;height:100%">
+<path class="draw" style="--len:120;--d:1.0" d="M230,215 L290.6,180.0" stroke="#2dd4bf" stroke-width="3" fill="none"/>
+<path class="draw" style="--len:200;--d:1.30" d="M290.6,180.0 Q244.4,105.9 249.6,66.3" stroke="#2dd4bf" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.60;transform-origin:250px 66px" x1="250.6" y1="58.4" x2="256.6" y2="12.7" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.50;transform-origin:250px 66px" cx="249.6" cy="66.3" r="7" fill="#34d399" stroke="#fff" stroke-width="2.5"/>
+<path class="draw" style="--len:200;--d:1.33" d="M290.6,180.0 Q272.1,113.4 287.4,76.4" stroke="#2dd4bf" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.63;transform-origin:287px 76px" x1="290.5" y1="69.0" x2="308.1" y2="26.5" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.53;transform-origin:287px 76px" cx="287.4" cy="76.4" r="5.5" fill="#f43f5e"/>
+<path class="draw" style="--len:200;--d:1.36" d="M290.6,180.0 Q297.0,127.7 321.3,96.0" stroke="#2dd4bf" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.66;transform-origin:321px 96px" x1="326.2" y1="89.7" x2="352.3" y2="55.6" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.56;transform-origin:321px 96px" cx="321.3" cy="96.0" r="5.5" fill="#fb923c"/>
+<path class="draw" style="--len:200;--d:1.39" d="M290.6,180.0 Q317.3,148.0 349.0,123.7" stroke="#2dd4bf" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.69;transform-origin:349px 124px" x1="355.3" y1="118.8" x2="386.0" y2="95.3" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.59;transform-origin:349px 124px" cx="349.0" cy="123.7" r="5.5" fill="#fb923c"/>
+<path class="draw" style="--len:200;--d:1.42" d="M290.6,180.0 Q331.6,172.9 368.6,157.6" stroke="#2dd4bf" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.72;transform-origin:369px 158px" x1="376.0" y1="154.5" x2="398.7" y2="145.1" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.62;transform-origin:369px 158px" cx="368.6" cy="157.6" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.45" d="M290.6,180.0 Q339.1,200.6 378.7,195.4" stroke="#2dd4bf" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.75;transform-origin:379px 195px" x1="386.6" y1="194.4" x2="410.1" y2="191.3" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.65;transform-origin:379px 195px" cx="378.7" cy="195.4" r="5.5" fill="#fb923c"/>
+<path class="draw" style="--len:200;--d:1.48" d="M290.6,180.0 Q339.1,229.4 378.7,234.6" stroke="#2dd4bf" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.78;transform-origin:379px 235px" x1="386.6" y1="235.6" x2="407.3" y2="238.3" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.68;transform-origin:379px 235px" cx="378.7" cy="234.6" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.51" d="M290.6,180.0 Q331.6,257.1 368.6,272.4" stroke="#2dd4bf" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.81;transform-origin:369px 272px" x1="376.0" y1="275.5" x2="392.0" y2="282.1" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.71;transform-origin:369px 272px" cx="368.6" cy="272.4" r="5.5" fill="#fb923c"/>
+<circle class="pop" style="--d:1.1;transform-origin:291px 180px" cx="290.6" cy="180.0" r="9" fill="#2dd4bf"/>
+<path class="draw" style="--len:120;--d:1.15" d="M230,215 L230.0,285.0" stroke="#5b8cff" stroke-width="3" fill="none"/>
+<path class="draw" style="--len:200;--d:1.45" d="M230.0,285.0 Q317.3,282.0 349.0,306.3" stroke="#5b8cff" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.75;transform-origin:349px 306px" x1="355.3" y1="311.2" x2="391.8" y2="339.2" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.65;transform-origin:349px 306px" cx="349.0" cy="306.3" r="5.5" fill="#fb923c"/>
+<path class="draw" style="--len:200;--d:1.48" d="M230.0,285.0 Q297.0,302.3 321.3,334.0" stroke="#5b8cff" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.78;transform-origin:321px 334px" x1="326.2" y1="340.3" x2="352.5" y2="374.6" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.68;transform-origin:321px 334px" cx="321.3" cy="334.0" r="5.5" fill="#fb923c"/>
+<path class="draw" style="--len:200;--d:1.51" d="M230.0,285.0 Q272.1,316.6 287.4,353.6" stroke="#5b8cff" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.81;transform-origin:287px 354px" x1="290.5" y1="361.0" x2="298.6" y2="380.7" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.71;transform-origin:287px 354px" cx="287.4" cy="353.6" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.54" d="M230.0,285.0 Q244.4,324.1 249.6,363.7" stroke="#5b8cff" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.84;transform-origin:250px 364px" x1="250.6" y1="371.6" x2="253.4" y2="392.8" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.74;transform-origin:250px 364px" cx="249.6" cy="363.7" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.57" d="M230.0,285.0 Q215.6,324.1 210.4,363.7" stroke="#5b8cff" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.87;transform-origin:210px 364px" x1="209.4" y1="371.6" x2="206.9" y2="390.6" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.77;transform-origin:210px 364px" cx="210.4" cy="363.7" r="7" fill="#facc15" stroke="#fff" stroke-width="2.5"/>
+<path class="draw" style="--len:200;--d:1.60" d="M230.0,285.0 Q187.9,316.6 172.6,353.6" stroke="#5b8cff" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.90;transform-origin:173px 354px" x1="169.5" y1="361.0" x2="162.6" y2="377.7" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.80;transform-origin:173px 354px" cx="172.6" cy="353.6" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.63" d="M230.0,285.0 Q163.0,302.3 138.7,334.0" stroke="#5b8cff" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.93;transform-origin:139px 334px" x1="133.8" y1="340.3" x2="123.4" y2="353.9" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.83;transform-origin:139px 334px" cx="138.7" cy="334.0" r="5.5" fill="#fb923c"/>
+<path class="draw" style="--len:200;--d:1.66" d="M230.0,285.0 Q142.7,282.0 111.0,306.3" stroke="#5b8cff" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.96;transform-origin:111px 306px" x1="104.7" y1="311.2" x2="92.0" y2="320.9" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.86;transform-origin:111px 306px" cx="111.0" cy="306.3" r="5.5" fill="#fb923c"/>
+<circle class="pop" style="--d:1.25;transform-origin:230px 285px" cx="230.0" cy="285.0" r="9" fill="#5b8cff"/>
+<path class="draw" style="--len:120;--d:1.3" d="M230,215 L169.4,180.0" stroke="#c084fc" stroke-width="3" fill="none"/>
+<path class="draw" style="--len:200;--d:1.60" d="M169.4,180.0 Q128.4,257.1 91.4,272.4" stroke="#c084fc" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.90;transform-origin:91px 272px" x1="84.0" y1="275.5" x2="45.9" y2="291.3" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.80;transform-origin:91px 272px" cx="91.4" cy="272.4" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.63" d="M169.4,180.0 Q120.9,229.4 81.3,234.6" stroke="#c084fc" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.93;transform-origin:81px 235px" x1="73.4" y1="235.6" x2="45.7" y2="239.3" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.83;transform-origin:81px 235px" cx="81.3" cy="234.6" r="7" fill="#facc15" stroke="#fff" stroke-width="2.5"/>
+<path class="draw" style="--len:200;--d:1.66" d="M169.4,180.0 Q120.9,200.6 81.3,195.4" stroke="#c084fc" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.96;transform-origin:81px 195px" x1="73.4" y1="194.4" x2="46.7" y2="190.9" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.86;transform-origin:81px 195px" cx="81.3" cy="195.4" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.69" d="M169.4,180.0 Q128.4,172.9 91.4,157.6" stroke="#c084fc" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:1.99;transform-origin:91px 158px" x1="84.0" y1="154.5" x2="65.0" y2="146.7" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.89;transform-origin:91px 158px" cx="91.4" cy="157.6" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.72" d="M169.4,180.0 Q142.7,148.0 111.0,123.7" stroke="#c084fc" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:2.02;transform-origin:111px 124px" x1="104.7" y1="118.8" x2="91.4" y2="108.7" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.92;transform-origin:111px 124px" cx="111.0" cy="123.7" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.75" d="M169.4,180.0 Q163.0,127.7 138.7,96.0" stroke="#c084fc" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:2.05;transform-origin:139px 96px" x1="133.8" y1="89.7" x2="125.5" y2="78.8" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.95;transform-origin:139px 96px" cx="138.7" cy="96.0" r="5.5" fill="#facc15"/>
+<path class="draw" style="--len:200;--d:1.78" d="M169.4,180.0 Q187.9,113.4 172.6,76.4" stroke="#c084fc" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:2.08;transform-origin:173px 76px" x1="169.5" y1="69.0" x2="164.7" y2="57.3" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:1.98;transform-origin:173px 76px" cx="172.6" cy="76.4" r="5.5" fill="#fb923c"/>
+<path class="draw" style="--len:200;--d:1.81" d="M169.4,180.0 Q215.6,105.9 210.4,66.3" stroke="#c084fc" stroke-opacity=".55" stroke-width="1.4" fill="none"/>
+<line class="pop" style="--d:2.11;transform-origin:210px 66px" x1="209.4" y1="58.4" x2="207.8" y2="46.2" stroke="#2b474d" stroke-width="6" stroke-linecap="round"/>
+<circle class="pop" style="--d:2.01;transform-origin:210px 66px" cx="210.4" cy="66.3" r="5.5" fill="#fb923c"/>
+<circle class="pop" style="--d:1.4000000000000001;transform-origin:169px 180px" cx="169.4" cy="180.0" r="9" fill="#c084fc"/>
+<circle cx="230" cy="215" r="16" fill="#0f2226" stroke="#2dd4bf" stroke-width="2"/><text x="230" y="219" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#2dd4bf">REQ</text></svg>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <table class="rt">
+        <thead><tr class="r" style="--d:1.4"><th>Item</th><th>Recommended (EU)</th><th>Risk</th><th>Avoid</th></tr></thead>
+        <tbody>
+<tr class="r" style="--d:1.6"><td><i style="background:#2dd4bf"></i>Brake control unit BCU-7<div class="muted" style="font-size:12px">240 units · 8 suppliers</div></td><td><b>Elite Systems 250</b><div class="mono muted" style="font-size:12px">SUPP_01703 · Belgium · delivery 100%</div></td><td class="mono" style="color:#34d399;font-size:20px;font-weight:700">15</td><td class="mono" style="color:var(--crit);font-size:13px">SUPP_09733 · risk 87</td></tr>
+<tr class="r" style="--d:1.8"><td><i style="background:#5b8cff"></i>Bogie frame (motor)<div class="muted" style="font-size:12px">480 units · 8 suppliers</div></td><td><b>Elite Partners 335</b><div class="mono muted" style="font-size:12px">SUPP_09469 · Denmark · delivery 96%</div></td><td class="mono" style="color:#facc15;font-size:20px;font-weight:700">41</td><td class="mono" style="color:var(--crit);font-size:13px">SUPP_06901 · risk 71</td></tr>
+<tr class="r" style="--d:2.0"><td><i style="background:#c084fc"></i>Door drive unit DDU-4<div class="muted" style="font-size:12px">960 units · 8 suppliers</div></td><td><b>Global Group 353</b><div class="mono muted" style="font-size:12px">SUPP_00216 · Hungary · delivery 92%</div></td><td class="mono" style="color:#facc15;font-size:20px;font-weight:700">37</td><td class="mono" style="color:var(--crit);font-size:13px">SUPP_00255 · risk 69</td></tr>
+        </tbody>
+      </table>
+      <div class="r muted mono" style="--d:2.2;font-size:12px">Real output of /api/procurement/bubbles on the 10,000-supplier dataset. Country is SIMULATED enrichment.</div>
+      <div class="card r" style="--d:2.4;padding:14px 18px;display:flex;gap:14px;align-items:center">
+        <span class="chip c-nv" style="flex:none"><i></i>first sign-in</span>
+        <div style="font-size:15px;color:var(--muted);line-height:1.45">Nemotron also writes each persona's <b style="color:var(--text)">layout spec</b> (title, greeting, panels, suppliers per item). The spec is checked against a whitelist and falls back to a template, and the LLM never writes code.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · TRUST -->
+<section class="slide" data-dur="11">
+  <div class="kicker r"><span class="n">10</span><span>Trust by design</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">Built for decisions people can defend in an audit.</h2>
+  <div class="tgrid">
+    <div class="card r" style="--d:.4"><div class="no">01</div><h3>No LLM arithmetic</h3><p>Every figure comes from a tool: pandas, the exact score formula or rule-based what-if. The model selects and explains.</p></div>
+    <div class="card r" style="--d:.55"><div class="no">02</div><h3>Cited evidence</h3><p>Inline sources on every claim: <span class="mono">[data]</span>, <span class="mono">[doc: file]</span>, <span class="mono">[email: subject]</span>, <span class="mono">[web: url]</span>.</p></div>
+    <div class="card r" style="--d:.7"><div class="no">03</div><h3>Honest labels</h3><p>Country, category, fleets, history and orders are enrichment, labelled <span class="tag-sim">SIMULATED</span> wherever they appear.</p></div>
+    <div class="card r" style="--d:.85"><div class="no">04</div><h3>Human in the loop</h3><p>Recommended actions are marked "need approval". Recommendations require risk &lt; 50; the buyer's priority adjusts the ranking but never overrides risk.</p></div>
+    <div class="card r" style="--d:1.0"><div class="no">05</div><h3>Graceful fallbacks</h3><p>Regex for emails, keyword matching for requests, a persona template for the UI. The app still works when a model call fails.</p></div>
+    <div class="card r" style="--d:1.15"><div class="no">06</div><h3>Bounded agents</h3><p>Step caps (6 / 4 / 3 / 2 per agent), tool output capped at 12k chars, caches for OCR and Tavily, thinking off for latency.</p></div>
+  </div>
+</section>
+
+<!-- 12 · PARTNERS -->
+<section class="slide" data-dur="13">
+  <div class="kicker r"><span class="n">11</span><span>Partner technology</span></div>
+  <h2 class="r" style="--d:.15;font-size:44px">Each partner does real work in the system.</h2>
+  <div class="pgrid">
+    <div class="pcard r" style="--d:.4;border-color:rgba(118,185,0,.5)">
+      <div class="logo" style="color:var(--nv)">NVIDIA Nemotron</div>
+      <div class="muted" style="margin-top:4px">Open models drive all reasoning, tool calling and OCR</div>
+      <div class="model"><span>agents · UI spec ·</span> nemotron-3-super-120b-a12b</div>
+      <div class="model"><span>fast alternative ·</span> nemotron-3.5-lightning-30b-a3b</div>
+      <div class="model"><span>OCR ·</span> nemotron-parse / nemotron-parse-2.0</div>
+      <div class="model"><span>vision fallback ·</span> nemotron-3.5-super-vl-120b-a12b</div>
+      <ul style="color:var(--nv)">
+        <li><b>Tool calling</b> for the supervisor and all 4 specialists</li>
+        <li><b>Structured JSON</b> for UI specs, email events and procurement items</li>
+      </ul>
+    </div>
+    <div class="pcard r" style="--d:.6;border-color:rgba(199,242,94,.4)">
+      <div class="logo" style="color:var(--nebius)">Nebius</div>
+      <div class="muted" style="margin-top:4px">Inference and hosting</div>
+      <ul style="color:var(--nebius)">
+        <li><b>Token Factory</b>: OpenAI-compatible endpoint serving Nemotron to every agent</li>
+        <li><b>Model picker</b> lists Nemotron models live from the account</li>
+        <li><b>Nebius Cloud VM</b> (CPU, cpu-d3) runs the app behind Caddy with automatic HTTPS</li>
+        <li>Provider switch to <b>NVIDIA API</b> (build.nvidia.com) for Nemotron Parse</li>
+      </ul>
+    </div>
+    <div class="pcard r" style="--d:.8;border-color:rgba(91,140,255,.5)">
+      <div class="logo" style="color:var(--tavily)">Tavily</div>
+      <div class="muted" style="margin-top:4px">Live web intelligence</div>
+      <ul style="color:var(--tavily)">
+        <li><b>Web Agent</b> tool <span class="mono">web_search</span> with news topic and answer synthesis</li>
+        <li><b>Supplier news feed</b>: 3 parallel queries by category and country</li>
+        <li>Market context: <b>commodity prices</b>, regulation, regional disruption</li>
+        <li>Results cached and cited by URL</li>
+      </ul>
+    </div>
+  </div>
+  <div class="r" style="--d:1.1;display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;align-items:center">
+    <span class="mono muted" style="font-size:13px;margin-right:6px">OPEN STACK</span>
+    <span class="chip">FastAPI</span><span class="chip">Server-Sent Events</span><span class="chip">pandas</span><span class="chip">PyMuPDF</span><span class="chip">React 18</span><span class="chip">Vite</span><span class="chip">Tailwind 4</span><span class="chip">d3-hierarchy</span><span class="chip">Recharts</span><span class="chip">MCP-style tools</span>
+  </div>
+</section>
+
+<!-- 13 · CLOSE -->
+<section class="slide" data-dur="10">
+  <div class="kicker r"><span>From question to approved action</span></div>
+  <h1 class="r" style="--d:.2;margin-top:60px;font-size:84px">Supply<span class="hl">Guard</span></h1>
+  <p class="lead r" style="--d:.4;font-size:28px;color:var(--text)">Hidden risks found. Evidence cited. A workspace built for each role.</p>
+  <div style="display:flex;gap:14px;margin-top:60px;align-items:center;flex-wrap:wrap">
+    <span class="chip c-teal pop" style="--d:.7;font-size:16px;padding:10px 16px">Ask</span><span class="muted r" style="--d:.8">→</span>
+    <span class="chip c-nv pop" style="--d:.9;font-size:16px;padding:10px 16px">Supervisor plans</span><span class="muted r" style="--d:1">→</span>
+    <span class="chip pop" style="--d:1.1;font-size:16px;padding:10px 16px;color:var(--low);border-color:rgba(52,211,153,.45)">Data</span>
+    <span class="chip c-doc pop" style="--d:1.2;font-size:16px;padding:10px 16px">Documents (OCR)</span>
+    <span class="chip c-mail pop" style="--d:1.3;font-size:16px;padding:10px 16px">Email</span>
+    <span class="chip c-tav pop" style="--d:1.4;font-size:16px;padding:10px 16px">Web (Tavily)</span><span class="muted r" style="--d:1.5">→</span>
+    <span class="chip c-teal pop" style="--d:1.6;font-size:16px;padding:10px 16px">Supplier tree + picks</span><span class="muted r" style="--d:1.7">→</span>
+    <span class="chip pop" style="--d:1.8;font-size:16px;padding:10px 16px;color:var(--text)">Human approves</span>
+  </div>
+  <div class="partners r" style="--d:2.1;margin-top:80px">
+    <span class="mono muted" style="font-size:14px;align-self:center;margin-right:8px">FOR SIEMENS MOBILITY · BUILT WITH</span>
+    <span class="chip c-nv"><i></i>NVIDIA Nemotron</span>
+    <span class="chip c-neb"><i></i>Nebius Token Factory</span>
+    <span class="chip c-neb"><i></i>Nebius Cloud</span>
+    <span class="chip c-tav"><i></i>Tavily</span>
+  </div>
+</section>
+
+<div id="bar"></div>
+<div id="foot"><span><b>SupplyGuard</b> · agentic supplier risk for rail</span><span id="count"></span></div>
+</div></div>
+<div id="hint">← → navigate · A autoplay · F fullscreen · H hide controls</div>
+
+<script>
+(() => {
+  const stage = document.getElementById("stage");
+  const slides = [...document.querySelectorAll(".slide")];
+  const bar = document.getElementById("bar"), count = document.getElementById("count");
+  let i = 0, timer = null;
+
+  const fit = () => {
+    const s = Math.min(innerWidth / 1600, innerHeight / 900);
+    stage.style.transform = `scale(${s})`;
+  };
+
+  const show = (n) => {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((el, k) => {
+      if (k === i) {
+        el.classList.remove("on");
+        void el.offsetWidth; // restart CSS animations on revisit
+        el.classList.add("on");
+      } else el.classList.remove("on");
+    });
+    bar.style.width = `${((i + 1) / slides.length) * 100}%`;
+    count.textContent = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+    try { history.replaceState(null, "", `#${i + 1}`); } catch (e) {}
+    if (timer) schedule();
+  };
+
+  const schedule = () => {
+    clearTimeout(timer);
+    const dur = parseFloat(slides[i].dataset.dur || 9) * 1000;
+    timer = setTimeout(() => (i < slides.length - 1 ? show(i + 1) : stop()), dur);
+  };
+  const stop = () => { clearTimeout(timer); timer = null; };
+
+  addEventListener("keydown", (e) => {
+    if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (["ArrowLeft", "PageUp"].includes(e.key)) show(i - 1);
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key.toLowerCase() === "a") { timer ? stop() : schedule(); }
+    else if (e.key.toLowerCase() === "h") document.body.classList.toggle("clean");
+    else if (e.key.toLowerCase() === "f") {
+      document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
+    }
+  });
+  stage.addEventListener("click", (e) => show(e.clientX > innerWidth / 2 ? i + 1 : i - 1));
+  addEventListener("resize", fit);
+
+  fit();
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1);
+})();
+</script>
+</body>
+</html>
