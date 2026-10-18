@@ -5,13 +5,22 @@ import { useApp } from "../App";
 import ZoomPack, { riskColor, type PackDatum } from "../components/ZoomPack";
 import { Card, RiskBadge, Tag } from "../components/ui";
 
-type Item = { item: string; category: string; quantity?: number | null; needed_by?: string | null };
+type Item = { item: string; category: string; quantity?: number | null; needed_by?: string | null; own_date?: boolean };
 type Msg = { role: "bot" | "user"; text: string; chips?: string[] };
 type Step = "items" | "constraints" | "priority" | "ready";
 
 const START_CHIPS = ["240 brake control units and 480 bogie frames by March 2027", "Door drive units and HVAC roof units", "Upload my item list (PDF)"];
 const CONSTRAINT_CHIPS = ["EU suppliers only", "No location constraint", "Add more items"];
 const PRIORITY_CHIPS = ["Lowest risk", "Delivery reliability", "Proven high volume"];
+
+// date inputs need YYYY-MM-DD; the parser returns free text such as "2027-03" or "March 2027"
+const toISO = (s?: string | null) => {
+  if (!s) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if (/^\d{4}-\d{2}$/.test(s)) return `${s}-01`;
+  const d = new Date(s);
+  return isNaN(+d) ? null : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 
 export default function Workspace() {
   const app = useApp();
@@ -57,17 +66,21 @@ export default function Workspace() {
       return;
     }
     const merged = [...items];
-    for (const f of found) if (!merged.some((m) => m.category === f.category && m.item.toLowerCase() === f.item.toLowerCase())) merged.push(f);
-    setItems(merged);
+    for (const f of found.map((x) => ({ ...x, needed_by: toISO(x.needed_by), own_date: !!toISO(x.needed_by) }))) if (!merged.some((m) => m.category === f.category && m.item.toLowerCase() === f.item.toLowerCase())) merged.push(f);
+    // items without their own date follow the first item's date
+    const first = merged[0]?.needed_by;
+    setItems(merged.map((m, k) => (k && !m.own_date && first ? { ...m, needed_by: first } : m)));
     const missing = found.filter((f) => !f.quantity || !f.needed_by).length;
     setStep("constraints");
     say({ role: "bot", text: `${source}I found ${found.length} item(s):\n${found.map((f) => `• ${f.item}${f.quantity ? ` × ${f.quantity}` : ""} (${f.category}${f.needed_by ? `, by ${f.needed_by}` : ""})`).join("\n")}` +
-      (missing ? `\n\n${missing} item(s) have no quantity or date yet; you can add them in the item list below.` : "") +
-      `\n\nAny sourcing constraints, for example supplier location?`, chips: CONSTRAINT_CHIPS });
+      (missing ? `\n\n${missing} item(s) have no quantity or date yet; set them in the item list below.` : "") +
+      `\n\nPress Enter to build the dashboards, or pick a sourcing constraint first.`, chips: CONSTRAINT_CHIPS });
   };
 
   const handle = async (text: string) => {
-    if (!text.trim() || busy) return;
+    if (busy) return;
+    // empty Enter once items are listed = send the request and build the dashboards
+    if (!text.trim()) { if (items.length) { say({ role: "user", text: "Build dashboards" }); await build(); } return; }
     setInput("");
     if (text === "Upload my item list (PDF)") { fileRef.current?.click(); return; }
     say({ role: "user", text });
@@ -97,15 +110,22 @@ export default function Workspace() {
   };
 
   const editItem = (i: number, patch: Partial<Item>) => setItems(items.map((x, k) => (k === i ? { ...x, ...patch } : x)));
+  // the first item's date cascades to every item whose date was not edited individually
+  const editDate = (i: number, d: string | null) => setItems(items.map((x, k) =>
+    k === i ? { ...x, needed_by: d, own_date: i > 0 && !!d } : i === 0 && !x.own_date ? { ...x, needed_by: d } : x));
+  const enterBuilds = (e: React.KeyboardEvent) => { if (e.key === "Enter") { e.preventDefault(); handle(""); } };
 
   const itemList = items.length > 0 && (
     <div className="rounded border border-line">
-      <div className="border-b border-line px-3 py-2"><span className="label">Items to procure ({items.length})</span></div>
+      <div className="flex items-center justify-between border-b border-line px-3 py-2"><span className="label">Items to procure ({items.length})</span>
+        <span className="text-[11px] text-muted">first date applies to all · edit any row · Enter to build</span></div>
       {items.map((it, i) => (
-        <div key={i} className="grid grid-cols-[1fr_70px_90px_24px] items-center gap-2 px-3 py-1.5 text-sm odd:bg-canvas">
+        <div key={i} className="grid grid-cols-[1fr_80px_140px_24px] items-center gap-2 px-3 py-1.5 text-sm odd:bg-canvas">
           <span className="min-w-0">{it.item}<span className="block truncate text-[11px] text-muted">{it.category}</span></span>
-          <input className="input !h-7 !px-1.5 text-xs" placeholder="qty" value={it.quantity ?? ""} onChange={(e) => editItem(i, { quantity: e.target.value ? +e.target.value : null })} />
-          <input className="input !h-7 !px-1.5 text-xs" placeholder="needed by" value={it.needed_by ?? ""} onChange={(e) => editItem(i, { needed_by: e.target.value || null })} />
+          <input type="number" min={1} className="input !h-7 !px-1.5 text-xs" placeholder="qty" value={it.quantity ?? ""} onKeyDown={enterBuilds}
+            onChange={(e) => editItem(i, { quantity: e.target.value ? +e.target.value : null })} />
+          <input type="date" title={i ? "needed by (own date)" : "needed by (applies to all items)"} className={`input !h-7 !px-1.5 text-xs ${i && !it.own_date ? "text-muted" : ""}`}
+            value={toISO(it.needed_by) ?? ""} onKeyDown={enterBuilds} onChange={(e) => editDate(i, e.target.value || null)} />
           <button className="text-muted hover:text-crit" onClick={() => setItems(items.filter((_, k) => k !== i))}><Trash2 size={14} /></button>
         </div>))}
     </div>
@@ -141,7 +161,7 @@ export default function Workspace() {
           {itemList && <div className="mt-3">{itemList}</div>}
           <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); handle(input); }}>
             <button type="button" className="btn btn-ghost !px-3" title="Upload item list (PDF, image, DOCX)" onClick={() => fileRef.current?.click()}><FileUp size={17} /></button>
-            <input className="input !h-11" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your answer, e.g. 120 traction converters by June 2027…" />
+            <input className="input !h-11" value={input} onChange={(e) => setInput(e.target.value)} placeholder={items.length ? "Press Enter to build the dashboards, or type to add items…" : "Type your answer, e.g. 120 traction converters by June 2027…"} />
             <button className="btn btn-primary !px-5" disabled={busy}><Send size={15} /></button>
             <input ref={fileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.docx,.txt,.md,.csv" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
           </form>

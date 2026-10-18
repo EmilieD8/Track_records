@@ -163,7 +163,7 @@ const fitFs = (text: string, width: number, maxFs: number, minFs = 7) => {
   return fs >= minFs ? fs : 0;
 };
 /** Lay out lines top-to-bottom centred on 0; each line gets the largest size that fits the circle at its height. */
-function fitLines(r: number, lines: { text: string; max: number; weight?: number; mono?: boolean }[]) {
+function fitLines(r: number, lines: { text: string; max: number; weight?: number; mono?: boolean; min?: number; group?: string }[]) {
   const gap = 0.25;
   let sizes = lines.map((l) => Math.min(l.max, r * 0.5));
   for (let pass = 0; pass < 3; pass++) {
@@ -172,8 +172,13 @@ function fitLines(r: number, lines: { text: string; max: number; weight?: number
     sizes = lines.map((l, i) => {
       const yc = y + sizes[i] * 0.5;
       y += sizes[i] * (1 + gap);
-      return fitFs(l.text, chord(r, Math.abs(yc) + sizes[i] * 0.5), l.max);
+      return fitFs(l.text, chord(r, Math.abs(yc) + sizes[i] * 0.5), l.max, l.min);
     });
+    // lines of one group (a wrapped name) share the smallest size so the name reads as one block
+    for (const g of new Set(lines.map((l) => l.group).filter(Boolean))) {
+      const m = Math.min(...sizes.filter((_, i) => lines[i].group === g));
+      sizes = sizes.map((v, i) => (lines[i].group === g ? m : v));
+    }
   }
   const total = sizes.reduce((a, b) => a + (b ? b * (1 + gap) : 0), 0);
   let y = -total / 2;
@@ -184,6 +189,18 @@ function fitLines(r: number, lines: { text: string; max: number; weight?: number
     return out;
   }).filter((l) => l.fs > 0);
 }
+/** Word-wrap into balanced lines (never cuts a word, never drops text). */
+const wrapName = (s: string, per = 18) => {
+  const n = Math.min(4, Math.max(1, Math.ceil(s.length / per)));
+  const target = s.length / n;
+  const out: string[] = [];
+  let cur = "";
+  for (const w of s.split(/\s+/)) {
+    if (cur && (cur + " " + w).length > target + 3 && out.length < n - 1) { out.push(cur); cur = w; }
+    else cur = cur ? `${cur} ${w}` : w;
+  }
+  return [...out, cur];
+};
 const splitName = (s: string) => {
   const i = s.lastIndexOf(" ");
   return i > 0 ? [s.slice(0, i), s.slice(i + 1)] : [s];
@@ -192,7 +209,7 @@ const splitName = (s: string) => {
 function ItemLabel({ n, r }: { n: N; r: number }) {
   const d = n.data as any;
   const lines = fitLines(r, [
-    ...splitName(d.name).length > 1 && d.name.length > 16 ? splitName(d.name).map((t) => ({ text: t, max: 22, weight: 700 })) : [{ text: d.name, max: 22, weight: 700 }],
+    ...wrapName(d.name).map((t) => ({ text: t, max: 22, weight: 700, min: 5, group: "name" })),
     { text: `${n.children?.length ?? 0} suppliers${d.quantity ? ` · qty ${d.quantity}` : ""}`, max: 13 },
     ...(d.recommended_name ? [{ text: "★ recommended", max: 12, weight: 700 }, { text: `${d.recommended_name} (risk ${d.risk})`, max: 12, weight: 600 }] : []),
   ]);

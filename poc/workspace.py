@@ -281,7 +281,7 @@ def _keyword_items(text: str) -> list[dict]:
 def parse_items(text: str, model: str, provider: str) -> dict:
     cats = _categories()
     prompt = f"""Extract the items a railway buyer needs to procure from the text below.
-Return ONLY JSON: {{"project": str|null, "items": [{{"item": str (short part name), "category": one of {cats},
+Return ONLY JSON: {{"project": str|null, "items": [{{"item": str (the item name exactly as written in the text, do not shorten or rename), "category": one of {cats},
 "quantity": int|null, "needed_by": str|null}}]}}. Map every item to the closest category. Ignore anything that is not an item.
 TEXT:
 {text[:6000]}"""
