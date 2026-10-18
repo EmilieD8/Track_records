@@ -2,7 +2,7 @@
 import csv, random, subprocess, pathlib, html, tempfile
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT/'demo_docs'; TMP = pathlib.Path(tempfile.mkdtemp())
-sup = {r['supplierID']: r['Supplier Name'] for r in csv.DictReader(open(ROOT/'supplier_risk_dataset.csv'))}
+sup = {r['supplierID']: r['Supplier Name'] for r in csv.DictReader(open(ROOT/'poc'/'data'/'supplier_risk_dataset.csv'))}
 rng = random.Random(42); ids = sorted(sup)
 
 P = [

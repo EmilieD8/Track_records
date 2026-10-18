@@ -15,10 +15,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 import data_tools as dt
-from config import ROOT
+from config import CACHE_DIR
 
 router = APIRouter(prefix="/api/guardrails")
-STORE = ROOT / ".cache" / "guardrails.json"
+STORE = CACHE_DIR / "guardrails.json"
 EU = {"Germany", "France", "Austria", "Netherlands", "Sweden", "Denmark", "Belgium", "Poland", "Czechia", "Spain",
       "Italy", "Portugal", "Hungary", "Romania", "Slovakia"}
 
