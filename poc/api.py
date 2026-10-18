@@ -22,6 +22,8 @@ from personas import load_personas, save_personas
 app = FastAPI(title="SupplyGuard API")
 from workspace import router as workspace_router  # noqa: E402
 app.include_router(workspace_router)
+from email_connector import router as email_router  # noqa: E402
+app.include_router(email_router)
 STATE = {"docs": [], "folder": str(ROOT / "sample_docs")}
 WEB_DIST = ROOT.parent / "web" / "dist"
 PILLARS = {
@@ -282,7 +284,7 @@ def _persona(pid: str) -> dict:
 @app.post("/api/system-prompt")
 def system_prompt(req: ChatReq):
     chunks = chunk_docs([d for d in STATE["docs"] if d["chars"]])
-    return {"prompt": build_system_prompt(_persona(req.persona_id), {"data": True, "docs": len(chunks), "web": req.web},
+    return {"prompt": build_system_prompt(_persona(req.persona_id), {"data": True, "email": True, "docs": len(chunks), "web": req.web},
                                           req.notes)}
 
 

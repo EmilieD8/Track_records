@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, Loader2, LogIn, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { api } from "../api";
-import { useApp, type UiConfig } from "../App";
+import { SiemensLogo, useApp, type UiConfig } from "../App";
 
 const PANELS: { id: string; label: string; hint: string }[] = [
   { id: "bubbles", label: "Item bubbles", hint: "items → suppliers that can deliver them → risk" },
@@ -50,6 +50,7 @@ export default function Login({ configure }: { configure: boolean }) {
           <h1 className="text-4xl font-bold leading-tight">See supplier risk early.<br />Switch suppliers in time.</h1>
           <p className="mt-4 max-w-md text-teal-light">Agents on NVIDIA Nemotron read your supplier data, documents (Nemotron Parse OCR) and the web (Tavily), then build a workspace for your role.</p>
         </div>
+        <div className="flex items-center gap-3"><span className="font-mono text-[10px] tracking-[.18em] text-teal-light/80">PROJECT SPONSOR</span><SiemensLogo white className="h-6" /></div>
         <div className="font-mono text-[11px] text-teal-light/70">10,000 suppliers · €20.4 bn spend · 18 risk signals per supplier</div>
       </div>
 
@@ -57,7 +58,7 @@ export default function Login({ configure }: { configure: boolean }) {
         <div className="card w-full max-w-xl p-8">
           {!configure && (
             <form onSubmit={signIn}>
-              <div className="label">Sign in</div>
+              <div className="flex items-center justify-between"><div className="label">Sign in</div><SiemensLogo className="h-4" /></div>
               <h2 className="mt-1 text-2xl font-semibold">Welcome to SupplyGuard</h2>
               <label className="mt-6 block"><span className="label">Work email</span>
                 <input className="input mt-1" type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="firstname.lastname@railco.eu" /></label>

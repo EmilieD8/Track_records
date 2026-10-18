@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 import data_tools
+import email_connector
 from extract import search_chunks
 from llm import chat
 from web import web_search
@@ -86,6 +87,11 @@ DOC_SYS = """You are the Document Agent. You search documents the user shared (c
 Use search_documents (try 2-3 different keyword queries if needed). Quote short passages and always cite as [doc: <file name>].
 If nothing relevant is found, say so plainly. Max 120 words."""
 
+EMAIL_SYS = """You are the Email Agent. You use the email connector: list_inbox, read_email, then assess_delay to recompute
+a supplier's risk after a reported disruption (delay weeks and causes taken from the email text). Never invent numbers:
+report risk before -> after, level change, exposure change, projected delivery, line-stop weeks vs safety stock, affected
+fleets and the best alternative from the tool result. Cite as [email: <subject>]. Max 150 words."""
+
 WEB_SYS = """You are the Web Intelligence Agent. Use web_search (Tavily) to find recent, relevant public information:
 news on disruptions, commodity prices, regions, regulations, or real companies. Supplier names in the internal dataset are
 anonymized, so search by topic/category/region instead of those names. Cite every fact as [web: <url>]. Max 120 words."""
@@ -123,6 +129,9 @@ def build_system_prompt(persona: dict, sources: dict, notes: str) -> str:
                      "alternatives, simulated country/category, 24-month history, fleet impact)")
     if sources.get("docs"):
         lines.append(f"- document_task -> Document Agent: {sources['docs']} shared document chunks (audits, certificates, contracts, OCR scans)")
+    if sources.get("email"):
+        lines.append("- email_task -> Email Agent: email connector (procurement inbox). Use it when the user mentions an email, "
+                     "a new message, a supplier notification or a delay, and to recalculate risk after a reported disruption")
     if sources.get("web"):
         lines.append("- web_task -> Web Agent: live internet search via Tavily")
     note_block = f"\nUSER NOTES (always respect these)\n{notes.strip()}" if notes.strip() else ""
@@ -132,7 +141,7 @@ def build_system_prompt(persona: dict, sources: dict, notes: str) -> str:
 
 def run_supervisor(question: str, history: list, persona: dict, notes: str, model: str,
                    chunks: list | None, web_enabled: bool, run: Run) -> str:
-    sources = {"data": True, "docs": len(chunks) if chunks else 0, "web": web_enabled}
+    sources = {"data": True, "email": True, "docs": len(chunks) if chunks else 0, "web": web_enabled}
     system = build_system_prompt(persona, sources, notes)
 
     data_tools_map = data_tools.TOOLS
@@ -143,7 +152,8 @@ def run_supervisor(question: str, history: list, persona: dict, notes: str, mode
                                 {"query": {"type": "string"}, "topic": {"type": "string", "enum": ["general", "news"]},
                                  "max_results": {"type": "integer"}})}
 
-    agents = {"data_task": ("Data Agent", DATA_SYS, data_tools_map, MAX_STEPS)}
+    agents = {"data_task": ("Data Agent", DATA_SYS, data_tools_map, MAX_STEPS),
+              "email_task": ("Email Agent", EMAIL_SYS, email_connector.TOOLS, 4)}
     if sources["docs"]:
         agents["document_task"] = ("Document Agent", DOC_SYS, doc_tools, 3)
     if web_enabled:

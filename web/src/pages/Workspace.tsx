@@ -3,6 +3,7 @@ import { BadgeCheck, Ban, Bot, FileUp, Loader2, MessagesSquare, Network, Send, S
 import { api, eur } from "../api";
 import { useApp } from "../App";
 import ZoomPack, { riskColor, type PackDatum } from "../components/ZoomPack";
+import RadialTree from "../components/RadialTree";
 import { Card, Metric, Tag } from "../components/ui";
 
 type Item = { item: string; category: string; quantity?: number | null; needed_by?: string | null };
@@ -34,6 +35,7 @@ export default function Workspace() {
   const [allRecs, setAllRecs] = useState<any[]>([]);
   const [data, setData] = useState<PackDatum | null>(null);
   const [focusCat, setFocusCat] = useState("");
+  const [viz, setViz] = useState<"tree" | "bubbles">("tree");
   const fileRef = useRef<HTMLInputElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
 
@@ -155,8 +157,11 @@ export default function Workspace() {
         <div className="min-w-0 space-y-5">
           {has("bubbles") && (
             <Card title="Items → suppliers that can deliver them" icon={<Network size={16} />}
-              right={<span className="font-mono text-[11px] text-muted">click an item · click a supplier for its dashboard</span>}>
-              {data && data.children?.length ? (
+              right={<div className="flex overflow-hidden rounded border border-line-strong text-[11px] font-semibold">
+                {([["tree", "Radial tree (new)"], ["bubbles", "Bubbles (current)"]] as const).map(([k, l]) => (
+                  <button key={k} onClick={() => setViz(k)} className={`px-2 py-1 ${viz === k ? "bg-petrol text-white" : "bg-white hover:bg-canvas"}`}>{l}</button>))}
+              </div>}>
+              {data && data.children?.length ? (viz === "tree" ? <RadialTree data={data} height={620} onOpenSupplier={app.openSupplier} /> :
                 <ZoomPack data={data} height={620} onOpenSupplier={app.openSupplier}
                   onFocus={(n) => setFocusCat(n.data.kind === "item" ? n.data.category! : "")} />
               ) : (

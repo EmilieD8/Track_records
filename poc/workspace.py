@@ -76,6 +76,7 @@ def bubbles(project: str, per_item: int = 8):
 # ---------------------------------------------------------------- recommendations
 @router.get("/recommendations")
 def recommendations(category: str = "", n: int = 3):
+    from email_connector import DISRUPTED
     d = dt.df()
     cats = [category] if category else sorted(d.category.unique())
     out = []
@@ -83,6 +84,7 @@ def recommendations(category: str = "", n: int = 3):
         g = d[d.category == cat]
         med = g[dt.PO].median()
         pool = g[(g[dt.T] < 50) & (g[dt.DELIV] >= 90) & (g[dt.PO] >= med)]
+        pool = pool[~pool.supplierID.isin([k for k, v in DISRUPTED.items() if not v["recommendable_after"]])]
         pool = pool.assign(score=pool[dt.T] - 0.5 * (pool[dt.DELIV] - 90) - 5 * pool.iris_certified.astype(int))
         buy = []
         for _, r in pool.nsmallest(n, "score").iterrows():
@@ -97,6 +99,9 @@ def recommendations(category: str = "", n: int = 3):
         avoid = [{"id": r.supplierID, "name": r["Supplier Name"], "risk": int(r[dt.T]),
                   "reason": f"{r.worst_factor} {int(r.max_sub)}, €{r.exposure_eur / 1e6:.1f}M exposed"}
                  for _, r in g[g[dt.T] >= 60].nlargest(2, "exposure_eur").iterrows()]
+        avoid = [{"id": k, "name": dt._get(k)["Supplier Name"], "risk": v["risk_after"],
+                  "reason": f"reported {v['delay_weeks']}-week delay (email), delivery now {v['delivery_after']:.0f}%"}
+                 for k, v in DISRUPTED.items() if not v["recommendable_after"] and dt._get(k).category == cat] + avoid
         out.append({"category": cat, "buy": buy, "avoid": avoid})
     return out
 
@@ -332,6 +337,7 @@ class BubbleReq(BaseModel):
 @router.post("/procurement/bubbles")
 def procurement_bubbles(req: BubbleReq):
     """Root -> one bubble per requested item -> suppliers that can deliver it (name + risk)."""
+    from email_connector import DISRUPTED
     d = dt.df()
     children = []
     for it in req.items:
@@ -341,6 +347,10 @@ def procurement_bubbles(req: BubbleReq):
         pool = pool.nlargest(max(3, req.per_item), dt.PO)  # proven volume = can deliver
         sups = [{"name": r["Supplier Name"], "id": r.supplierID, "kind": "supplier", "risk": int(r[dt.T]), "value": _size(r[dt.T]),
                  "po": float(r[dt.PO]), "delivery": float(r[dt.DELIV]), "country": r.country} for _, r in pool.iterrows()]
+        for s in sups:  # suppliers with an analysed disruption email carry the recalculated values
+            if s["id"] in DISRUPTED:
+                x = DISRUPTED[s["id"]]
+                s.update(risk=x["risk_after"], value=_size(x["risk_after"]), delivery=x["delivery_after"], alert=f"{x['delay_weeks']}-week delay reported")
         if sups:
             children.append({"name": it["item"], "kind": "item", "category": it["category"], "quantity": it.get("quantity"),
                              "needed_by": it.get("needed_by"), "risk": min(s["risk"] for s in sups), "n": len(sups), "children": sups})

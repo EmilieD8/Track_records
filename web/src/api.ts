@@ -91,7 +91,15 @@ export const api = {
   orders: (id: string) => j<any>(`/api/supplier/${id}/orders`),
   notes: (id: string) => j<any[]>(`/api/supplier/${id}/notes`),
   addNote: (id: string, note: any) => post<any[]>(`/api/supplier/${id}/notes`, note),
+  inbox: () => j<Email[]>("/api/email/inbox"),
+  simulateEmail: (scenario: string) => post<Email>("/api/email/simulate", { scenario }),
+  analyzeEmail: (id: string, model: string, provider: string) => post<any>(`/api/email/${id}/analyze`, { model, provider }),
 };
+
+export interface Email {
+  id: string; from: string; subject: string; body: string; received: string; read: boolean;
+  supplier_id: string | null; scenario?: string; analysis?: { risk_before: number; risk_after: number };
+}
 
 export async function streamChat(body: any, onMsg: (m: any) => void) {
   const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });

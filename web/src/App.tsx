@@ -1,16 +1,18 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { BarChart3, Bot, Building2, ChevronDown, ChevronRight, FolderKanban, LogOut, MessagesSquare, Plus, Settings, ShieldCheck, Trash2 } from "lucide-react";
-import { api, type Persona } from "./api";
+import { BarChart3, Bell, Bot, Building2, ChevronDown, ChevronRight, FolderKanban, Home as HomeIcon, LogOut, Mail, Network, Plus, Settings, ShieldCheck, Trash2, X } from "lucide-react";
+import { api, type Email, type Persona } from "./api";
 import SettingsPage from "./pages/Setup";
 import Dashboard from "./pages/Dashboard";
 import SupplierDive from "./pages/SupplierDive";
 import Copilot from "./pages/Copilot";
 import Login from "./pages/Login";
 import Workspace from "./pages/Workspace";
+import Home from "./pages/Home";
+import Inbox from "./pages/Inbox";
 
-export type Page = "login" | "configure" | "workspace" | "dashboard" | "supplier" | "copilot" | "settings";
+export type Page = "login" | "configure" | "home" | "inbox" | "workspace" | "dashboard" | "supplier" | "copilot" | "settings";
 export interface UiConfig { per_item: number; panels: string[] }
-export interface Project { id: string; name: string; created?: string; messages?: any[]; items?: any[]; eu_only?: boolean; per_item?: number; showed?: boolean; copilot?: any[] }
+export interface Project { id: string; name: string; created?: string; messages?: any[]; items?: any[]; eu_only?: boolean; per_item?: number; showed?: boolean; copilot?: any[]; folder?: string }
 
 interface Ctx {
   persona: Persona | null;
@@ -37,17 +39,26 @@ interface Ctx {
   saveProject: (patch: Partial<Project>) => void;
   projectBubbles: any;
   setProjectBubbles: (b: any) => void;
+  projects: Project[];
+  createProject: (p: Partial<Project>, pg?: Page, question?: string) => Promise<void>;
+  openProject: (id: string, pg?: Page) => void;
+  inbox: Email[];
+  refreshInbox: () => Promise<void>;
 }
 
 const AppCtx = createContext<Ctx>(null as unknown as Ctx);
 export const useApp = () => useContext(AppCtx);
 
 const SUB: { id: Page; label: string; icon: JSX.Element }[] = [
-  { id: "workspace", label: "Chat & item bubbles", icon: <MessagesSquare size={15} /> },
+  { id: "copilot", label: "Supervisor chat", icon: <Bot size={15} /> },
+  { id: "workspace", label: "Items & suppliers", icon: <Network size={15} /> },
   { id: "supplier", label: "Supplier dashboard", icon: <Building2 size={15} /> },
   { id: "dashboard", label: "Portfolio risk", icon: <BarChart3 size={15} /> },
-  { id: "copilot", label: "AI copilot", icon: <Bot size={15} /> },
 ];
+
+export const SiemensLogo = ({ white = false, className = "h-5" }: { white?: boolean; className?: string }) => (
+  <img src={white ? "/siemens-logo-white.svg" : "/siemens-logo.svg"} alt="Siemens" className={className} />
+);
 
 export default function App() {
   const [page, setPage] = useState<Page>("login");
@@ -63,20 +74,39 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeId, setActiveId] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [newName, setNewName] = useState<string | null>(null);
   const [projectBubbles, setProjectBubbles] = useState<any>(null);
   const saveTimer = useRef<number>();
 
+  const [inbox, setInbox] = useState<Email[]>([]);
+  const [toast, setToast] = useState<Email | null>(null);
+  const seen = useRef<Set<string> | null>(null);
+
   const refreshStatus = () => api.status().then(setStatus).catch(() => setStatus(null));
   useEffect(() => { refreshStatus(); }, []);
+  // email connector: poll the inbox, pop a toast for every new unread email
+  const refreshInbox = async () => {
+    const m = await api.inbox().catch(() => null);
+    if (!m) return;
+    if (seen.current) { const fresh = m.find((x) => !x.read && !seen.current!.has(x.id)); if (fresh) setToast(fresh); }
+    seen.current = new Set(m.map((x) => x.id));
+    setInbox(m);
+  };
+  useEffect(() => {
+    if (!persona) return;
+    refreshInbox();
+    const t = window.setInterval(refreshInbox, 8000);
+    return () => window.clearInterval(t);
+  }, [persona?.id]);
+  const unread = inbox.filter((m) => !m.read).length;
 
   const project = projects.find((p) => p.id === activeId) ?? null;
 
-  const createProject = async (name: string) => {
+  const createProject = async (init: Partial<Project>, pg: Page = "workspace", question?: string) => {
     if (!persona) return;
-    const p = await api.saveUserProject(persona.email!, { name, messages: [], items: [], per_item: config?.per_item ?? 8 });
+    const p = await api.saveUserProject(persona.email!, { messages: [], items: [], per_item: config?.per_item ?? 8, ...init });
     setProjects((ps) => [...ps, p]);
-    openProject(p.id);
+    openProject(p.id, pg);
+    if (question) setPending(question);
   };
   const openProject = (id: string, pg: Page = "workspace") => {
     setActiveId(id); setExpanded((e) => ({ ...e, [id]: true })); setProjectBubbles(null); setPage(pg);
@@ -102,7 +132,7 @@ export default function App() {
       setProjects(ps);
       if (p.ui_config && p.ui_spec) {
         setConfig(p.ui_config); setSpec(p.ui_spec);
-        if (ps.length) openProject(ps[ps.length - 1].id); else { setPage("workspace"); setNewName(""); }
+        setPage("home");
       } else setPage("configure");
     },
     openSupplier: (id) => { setSupplierId(id); setPage("supplier"); },
@@ -113,9 +143,9 @@ export default function App() {
     setWorkspace: (c, s) => {
       setConfig(c); setSpec(s);
       if (persona) api.savePersona({ ...persona, ui_config: c, ui_spec: s }).then(setPersona);
-      if (projects.length) openProject(activeId || projects[projects.length - 1].id); else { setPage("workspace"); setNewName(""); }
+      setPage("home");
     },
-    project, saveProject, projectBubbles, setProjectBubbles,
+    project, saveProject, projectBubbles, setProjectBubbles, projects, createProject, openProject, inbox, refreshInbox,
   };
 
   if (page === "login" || page === "configure" || !persona)
@@ -125,12 +155,16 @@ export default function App() {
     <AppCtx.Provider value={ctx}>
       <div className="flex h-full flex-col">
         <header className="flex h-14 shrink-0 items-center gap-4 bg-petrol-dark px-5 text-white">
-          <div className="flex items-center gap-2">
+          <button className="flex items-center gap-2" onClick={() => setPage("home")} title="Home">
             <ShieldCheck className="text-teal-light" size={26} />
-            <div className="leading-tight">
+            <div className="text-left leading-tight">
               <div className="text-lg font-semibold">SupplyGuard</div>
               <div className="font-mono text-[9px] tracking-[.18em] text-teal-light">PROCUREMENT INTELLIGENCE · RAIL</div>
             </div>
+          </button>
+          <div className="ml-2 hidden items-center gap-2 border-l border-white/20 pl-4 sm:flex">
+            <SiemensLogo white className="h-4" />
+            <span className="font-mono text-[9px] tracking-[.14em] text-teal-light">MOBILITY</span>
           </div>
           {project && <div className="ml-6 hidden items-center gap-2 rounded bg-white/10 px-3 py-1.5 text-sm md:flex"><FolderKanban size={14} />{project.name}</div>}
           <div className="flex-1" />
@@ -139,6 +173,10 @@ export default function App() {
               <span key={k} className="flex items-center gap-1"><span className={`h-2 w-2 rounded-full ${status.keys[k] ? "bg-emerald-400" : "bg-red-400"}`} />{k}</span>
             ))}
           </div>
+          <button onClick={() => setPage("inbox")} title="Email inbox" className={`relative rounded p-2 hover:bg-white/15 ${page === "inbox" ? "bg-white/20" : ""}`}>
+            <Bell size={19} />
+            {unread > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-crit px-1 font-mono text-[10px] font-bold">{unread}</span>}
+          </button>
           <button onClick={() => setPage("settings")} title="Settings" className={`rounded p-2 hover:bg-white/15 ${page === "settings" ? "bg-white/20" : ""}`}><Settings size={19} /></button>
           <div className="flex items-center gap-2 rounded bg-white/10 px-3 py-1.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-teal font-semibold">{persona.name[0]}</div>
@@ -152,16 +190,13 @@ export default function App() {
         </header>
         <div className="flex min-h-0 flex-1">
           <nav className="flex w-64 shrink-0 flex-col overflow-auto border-r border-line bg-white p-3">
-            <button className="btn btn-primary w-full justify-center" onClick={() => setNewName("")}><Plus size={15} /> New project</button>
-            {newName !== null && (
-              <form className="mt-2 rounded border border-petrol p-2" onSubmit={(e) => { e.preventDefault(); if (newName.trim()) { createProject(newName.trim()); setNewName(null); } }}>
-                <input autoFocus className="input !h-8 text-sm" placeholder="Project name, e.g. RegioFlex brakes 2027" value={newName} onChange={(e) => setNewName(e.target.value)} />
-                <div className="mt-1.5 flex justify-end gap-1.5">
-                  <button type="button" className="btn btn-ghost !py-1 text-xs" onClick={() => setNewName(null)}>Cancel</button>
-                  <button className="btn btn-primary !py-1 text-xs" disabled={!newName.trim()}>Create</button>
-                </div>
-              </form>
-            )}
+            <button className="btn btn-primary w-full justify-center" onClick={() => setPage("home")}><Plus size={15} /> New project</button>
+            <div className="mt-3 space-y-0.5">
+              {([["home", "Home", <HomeIcon size={15} />], ["inbox", "Email inbox", <Mail size={15} />]] as const).map(([id, label, icon]) => (
+                <button key={id} onClick={() => setPage(id)}
+                  className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] ${page === id ? "bg-tint-2 font-semibold text-petrol-dark" : "hover:bg-canvas"}`}>
+                  {icon}{label}{id === "inbox" && unread > 0 && <span className="ml-auto rounded-full bg-crit px-1.5 font-mono text-[10px] font-bold text-white">{unread}</span>}</button>))}
+            </div>
             <div className="label mb-1 mt-4 px-1">My projects ({projects.length})</div>
             {projects.map((p) => {
               const open = expanded[p.id];
@@ -188,7 +223,7 @@ export default function App() {
                 </div>
               );
             })}
-            {!projects.length && <p className="px-1 text-xs text-muted">No projects yet. Create one to start a procurement chat.</p>}
+            {!projects.length && <p className="px-1 text-xs text-muted">No projects yet. Start one from Home.</p>}
             <div className="flex-1" />
             <div className="mt-4 rounded bg-tint p-3">
               <div className="label flex items-center justify-between">Shared docs <span className="h-2 w-2 rounded-full bg-petrol" /></div>
@@ -196,15 +231,34 @@ export default function App() {
               <div className="text-xs text-muted">Model: {model.split("/").pop()}</div>
             </div>
           </nav>
-          <main className="min-w-0 flex-1 overflow-auto">
+          <main className="relative min-w-0 flex-1 overflow-auto">
+            {page === "home" && <Home />}
+            {page === "inbox" && <Inbox />}
             {page === "workspace" && (spec && project ? <Workspace key={project.id} /> :
               <div className="flex h-full flex-col items-center justify-center text-muted"><FolderKanban size={40} className="text-line-strong" />
-                <p className="mt-2">Create a project with "New project" to start.</p></div>)}
+                <p className="mt-2">Open a project or start one from Home.</p></div>)}
             {page === "settings" && <SettingsPage />}
             {page === "dashboard" && <Dashboard />}
             {page === "supplier" && <SupplierDive />}
             {page === "copilot" && <Copilot key={project?.id ?? "none"} />}
           </main>
+          {toast && (
+            <div className="fixed bottom-5 right-5 z-50 w-96 rounded-md border-l-4 border-crit bg-white p-4 shadow-xl">
+              <div className="flex items-start gap-3">
+                <Mail size={18} className="mt-0.5 shrink-0 text-crit" />
+                <div className="min-w-0 flex-1">
+                  <div className="label !text-crit">New email · email connector</div>
+                  <div className="mt-0.5 text-sm font-semibold">{toast.subject}</div>
+                  <div className="truncate font-mono text-[11px] text-muted">{toast.from}</div>
+                  <div className="mt-2 flex gap-2">
+                    <button className="btn btn-primary !py-1 text-xs" onClick={() => { setToast(null); setPage("inbox"); }}>Open &amp; analyse</button>
+                    <button className="btn btn-ghost !py-1 text-xs" onClick={() => setToast(null)}>Later</button>
+                  </div>
+                </div>
+                <button onClick={() => setToast(null)} className="text-muted"><X size={15} /></button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </AppCtx.Provider>

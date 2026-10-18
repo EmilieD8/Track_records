@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Bot, Database, FileSearch, Globe, Loader2, Send, Sparkles, Terminal, Workflow } from "lucide-react";
+import { Bot, Database, FileSearch, Globe, Loader2, Mail, Send, Sparkles, Terminal, Workflow } from "lucide-react";
 import { api, streamChat, type AgentEvent } from "../api";
 import { useApp } from "../App";
 import { Tag } from "../components/ui";
@@ -13,6 +13,7 @@ const AGENT_STYLE: Record<string, { icon: JSX.Element; cls: string }> = {
   "Data Agent": { icon: <Database size={13} />, cls: "bg-[#dbeafe] text-[#1e40af]" },
   "Document Agent": { icon: <FileSearch size={13} />, cls: "bg-[#fef3c7] text-[#92400e]" },
   "Web Agent": { icon: <Globe size={13} />, cls: "bg-[#dcfce7] text-[#166534]" },
+  "Email Agent": { icon: <Mail size={13} />, cls: "bg-[#fce7f3] text-[#9d174d]" },
 };
 
 function Trace({ events, live }: { events: AgentEvent[]; live?: boolean }) {
@@ -79,7 +80,7 @@ export default function Copilot() {
         <div className="flex items-center justify-between border-b border-line bg-white px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded bg-petrol text-white"><Bot size={20} /></div>
-            <div><div className="flex items-center gap-2 text-lg font-semibold">Chat with SupplyGuard AI <Tag>Supervisor + 3 agents</Tag></div>
+            <div><div className="flex items-center gap-2 text-lg font-semibold">Chat with SupplyGuard AI <Tag>Supervisor + 4 agents</Tag></div>
               <div className="text-xs text-muted">Answers from the dataset, your shared documents and the web, with every claim cited</div></div>
           </div>
           <div className="text-right font-mono text-[11px] text-muted"><div>{app.model}</div><div>{app.provider}</div></div>
@@ -138,6 +139,7 @@ export default function Copilot() {
         <ul className="space-y-1.5 text-sm">
           <li className="flex items-center gap-2"><Database size={14} className="text-petrol" /> Supplier dataset (10,000)</li>
           <li className="flex items-center gap-2"><FileSearch size={14} className="text-petrol" /> {app.status?.docs ?? 0} shared documents</li>
+          <li className="flex items-center gap-2"><Mail size={14} className="text-petrol" /> Email inbox ({app.inbox.filter((m) => !m.read).length} unread)</li>
           <li className="flex items-center gap-2"><Globe size={14} className="text-petrol" /> Web search {app.web ? "on" : "off"}</li>
         </ul>
         <button className="btn btn-ghost w-full justify-center" onClick={async () => setPrompt((await api.systemPrompt(body(""))).prompt)}><Terminal size={14} /> Show system prompt</button>
