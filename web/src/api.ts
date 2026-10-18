@@ -93,11 +93,17 @@ export const api = {
   inbox: () => j<Email[]>("/api/email/inbox"),
   simulateEmail: (scenario: string) => post<Email>("/api/email/simulate", { scenario }),
   analyzeEmail: (id: string, model: string, provider: string) => post<any>(`/api/email/${id}/analyze`, { model, provider }),
+  emailDecision: (id: string, user: string, decision: "approved" | "rejected") => post<Email>(`/api/email/${id}/decision`, { user, decision }),
+  boundaries: (user: string) => j<any>(`/api/guardrails/boundaries?user=${encodeURIComponent(user)}`),
+  setBoundaries: (user: string, boundaries: any) => post<any>("/api/guardrails/boundaries", { user, boundaries }),
+  decide: (user: string, action: string, decision: string, context = "") => post<any>("/api/guardrails/decision", { user, action, decision, context }),
+  audit: (user: string) => j<any[]>(`/api/guardrails/audit?user=${encodeURIComponent(user)}`),
+  rules: () => j<any>("/api/guardrails/rules"),
 };
 
 export interface Email {
   id: string; from: string; subject: string; body: string; received: string; read: boolean;
-  supplier_id: string | null; scenario?: string; analysis?: { risk_before: number; risk_after: number };
+  supplier_id: string | null; scenario?: string; analysis?: { risk_before: number; risk_after: number; status?: string };
 }
 
 export async function streamChat(body: any, onMsg: (m: any) => void) {

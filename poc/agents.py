@@ -116,12 +116,14 @@ RULES
 - Use the web agent for current external context (disruptions, regions, commodities, regulation) when it adds value.
 - Every number must come from an agent result. Never invent supplier ids or figures.
 - Cite sources inline: [data], [doc: file], [web: url]. Mark simulated information as SIMULATED.
+- Write "Recommended actions (need approval)" as a bulleted list: the user approves or rejects each one.
 - Tailor the answer to the user's role and focus. Max ~250 words: a 1-2 sentence bottom line, then the key evidence
   (at most one table, max 6 rows), then max 4 'Recommended actions (need approval)'.
 {notes}"""
 
 
-def build_system_prompt(persona: dict, sources: dict, notes: str) -> str:
+def build_system_prompt(persona: dict, sources: dict, notes: str, boundaries: dict | None = None) -> str:
+    from guardrails import DEFAULT_BOUNDARIES, boundary_rules
     lines = []
     lines.append("Call the tool `delegate` with one task per agent you need; the agents run IN PARALLEL.")
     if sources.get("data"):
@@ -135,14 +137,15 @@ def build_system_prompt(persona: dict, sources: dict, notes: str) -> str:
     if sources.get("web"):
         lines.append("- web_task -> Web Agent: live internet search via Tavily")
     note_block = f"\nUSER NOTES (always respect these)\n{notes.strip()}" if notes.strip() else ""
+    note_block += "\n" + boundary_rules(boundaries or DEFAULT_BOUNDARIES)
     return SUP_SYS.format(sources="\n".join(lines) or "- none", notes=note_block,
                           **{k: persona.get(k, "") for k in ("name", "role", "department", "focus", "style")})
 
 
 def run_supervisor(question: str, history: list, persona: dict, notes: str, model: str,
-                   chunks: list | None, web_enabled: bool, run: Run) -> str:
+                   chunks: list | None, web_enabled: bool, run: Run, boundaries: dict | None = None) -> str:
     sources = {"data": True, "email": True, "docs": len(chunks) if chunks else 0, "web": web_enabled}
-    system = build_system_prompt(persona, sources, notes)
+    system = build_system_prompt(persona, sources, notes, boundaries)
 
     data_tools_map = data_tools.TOOLS
     doc_tools = {"search_documents": (lambda query, k=5: {"hits": search_chunks(chunks or [], query, k)},

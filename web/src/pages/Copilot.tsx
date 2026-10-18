@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Bot, Database, FileSearch, Globe, Loader2, Mail, Send, Sparkles, Terminal, Workflow } from "lucide-react";
+import { Bot, Database, ShieldCheck, FileSearch, Globe, Loader2, Mail, Send, Sparkles, Terminal, Workflow } from "lucide-react";
 import { api, streamChat, type AgentEvent } from "../api";
 import { useApp } from "../App";
 import { Tag } from "../components/ui";
+import ValidationCard, { type Validation } from "../components/Validation";
 
-type Msg = { role: "user" | "assistant"; content: string; events?: AgentEvent[]; ms?: number };
+type Msg = { role: "user" | "assistant"; content: string; events?: AgentEvent[]; ms?: number; validation?: Validation; question?: string; revealed?: boolean };
 
 const AGENT_STYLE: Record<string, { icon: JSX.Element; cls: string }> = {
   Supervisor: { icon: <Workflow size={13} />, cls: "bg-petrol text-white" },
@@ -14,6 +15,8 @@ const AGENT_STYLE: Record<string, { icon: JSX.Element; cls: string }> = {
   "Document Agent": { icon: <FileSearch size={13} />, cls: "bg-[#fef3c7] text-[#92400e]" },
   "Web Agent": { icon: <Globe size={13} />, cls: "bg-[#dcfce7] text-[#166534]" },
   "Email Agent": { icon: <Mail size={13} />, cls: "bg-[#fce7f3] text-[#9d174d]" },
+  Guardrail: { icon: <ShieldCheck size={13} />, cls: "bg-slate-ink text-emerald-300" },
+  "Validator Agent": { icon: <ShieldCheck size={13} />, cls: "bg-[#ede9fe] text-[#5b21b6]" },
 };
 
 function Trace({ events, live }: { events: AgentEvent[]; live?: boolean }) {
@@ -48,7 +51,7 @@ export default function Copilot() {
   const p = app.persona;
 
   const body = (question: string) => ({ question, persona_id: p?.id, notes: p?.notes ?? "", model: app.model, provider: app.provider, web: app.web,
-    history: msgs.map((m) => ({ role: m.role, content: m.content })) });
+    history: msgs.map((m) => ({ role: m.role, content: m.content })), user: p?.email ?? "" });
 
   const send = async (q: string) => {
     if (!q.trim() || live) return;
@@ -58,14 +61,15 @@ export default function Copilot() {
     setLive([]);
     const t0 = performance.now();
     let answer = "";
+    let validation: Validation | undefined;
     try {
       await streamChat(body(q), (m) => {
         if (m.type === "event") { evs.push(m as AgentEvent); setLive([...evs]); }
-        if (m.type === "final") answer = m.answer;
+        if (m.type === "final") { answer = m.answer; validation = m.validation; }
         if (m.type === "error") answer = `**Error:** ${m.error}`;
       });
     } catch (e) { answer = `**Error:** ${e}`; }
-    setMsgs((m) => [...m, { role: "assistant", content: answer, events: evs, ms: performance.now() - t0 }]);
+    setMsgs((m) => [...m, { role: "assistant", content: answer, events: evs, ms: performance.now() - t0, validation, question: q }]);
     setLive(null);
   };
 
@@ -103,8 +107,16 @@ export default function Copilot() {
               <div className="card p-5">
                 <div className="mb-2 flex items-center justify-between"><span className="text-sm font-semibold text-petrol">SupplyGuard Intelligence Agent</span>
                   <span className="font-mono text-[11px] text-muted">{((m.ms ?? 0) / 1000).toFixed(0)}s · {m.events?.length} agent steps</span></div>
-                <div className="md text-sm leading-relaxed"><ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown></div>
+                {m.validation?.verdict === "block" && !m.revealed && m.validation.checks.some((c) => c.name !== "Input guardrail") ? (
+                  <div className="rounded border border-dashed border-crit bg-[#fef2f2] p-4 text-sm">
+                    <div className="flex items-center gap-2 font-semibold text-crit"><ShieldCheck size={16} /> Answer withheld: it breaks one of your boundaries or is not grounded in the data.</div>
+                    <p className="mt-1 text-xs text-muted">See the Validator Agent findings below. You can change your boundaries or ask again.</p>
+                    <button className="btn btn-ghost mt-2 !py-1 text-xs" onClick={() => { api.decide(p?.email ?? "", `Viewed withheld answer: ${m.question ?? ""}`, "override (viewed)"); setMsgs((x) => x.map((y, k) => (k === i ? { ...y, revealed: true } : y))); }}>
+                      Show withheld answer (logged)</button>
+                  </div>
+                ) : <div className="md text-sm leading-relaxed"><ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown></div>}
               </div>
+              {m.validation && <ValidationCard v={m.validation} context={m.question ?? ""} onChange={(v) => setMsgs((x) => x.map((y, k) => (k === i ? { ...y, validation: v } : y)))} />}
               {m.events && (
                 <details className="mt-2 rounded border border-line bg-white p-3"><summary className="cursor-pointer text-xs font-semibold text-muted">Agent trace</summary>
                   <div className="mt-2"><Trace events={m.events} /></div></details>

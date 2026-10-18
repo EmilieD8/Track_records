@@ -8,8 +8,9 @@ import Login from "./pages/Login";
 import Workspace from "./pages/Workspace";
 import Home from "./pages/Home";
 import Inbox from "./pages/Inbox";
+import Guardrails from "./pages/Guardrails";
 
-export type Page = "login" | "configure" | "home" | "inbox" | "workspace" | "supplier" | "copilot" | "settings";
+export type Page = "login" | "configure" | "home" | "inbox" | "guardrails" | "workspace" | "supplier" | "copilot" | "settings";
 export interface UiConfig { per_item: number; panels: string[] }
 export interface Project { id: string; name: string; created?: string; messages?: any[]; items?: any[]; eu_only?: boolean; per_item?: number; showed?: boolean; copilot?: any[]; folder?: string }
 
@@ -171,6 +172,9 @@ export default function App() {
               <span key={k} className="flex items-center gap-1"><span className={`h-2 w-2 rounded-full ${status.keys[k] ? "bg-emerald-400" : "bg-red-400"}`} />{k}</span>
             ))}
           </div>
+          <button onClick={() => setPage("guardrails")} title="Security layer: guardrails, Validator Agent, human approval"
+            className="hidden items-center gap-1.5 rounded-full border border-emerald-400/60 bg-emerald-400/10 px-2.5 py-1 font-mono text-[10px] font-semibold text-emerald-300 hover:bg-emerald-400/20 md:flex">
+            <ShieldCheck size={13} /> GUARDRAILS ON</button>
           <button onClick={() => setPage("inbox")} title="Email inbox" className={`relative rounded p-2 hover:bg-white/15 ${page === "inbox" ? "bg-white/20" : ""}`}>
             <Bell size={19} />
             {unread > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-crit px-1 font-mono text-[10px] font-bold">{unread}</span>}
@@ -190,7 +194,7 @@ export default function App() {
           <nav className="flex w-64 shrink-0 flex-col overflow-auto border-r border-line bg-white p-3">
             <button className="btn btn-primary w-full justify-center" onClick={() => setPage("home")}><Plus size={15} /> New project</button>
             <div className="mt-3 space-y-0.5">
-              {([["home", "Home", <HomeIcon size={15} />], ["inbox", "Email inbox", <Mail size={15} />]] as const).map(([id, label, icon]) => (
+              {([["home", "Home", <HomeIcon size={15} />], ["inbox", "Email inbox", <Mail size={15} />], ["guardrails", "Guardrails & approvals", <ShieldCheck size={15} />]] as const).map(([id, label, icon]) => (
                 <button key={id} onClick={() => setPage(id)}
                   className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] ${page === id ? "bg-tint-2 font-semibold text-petrol-dark" : "hover:bg-canvas"}`}>
                   {icon}{label}{id === "inbox" && unread > 0 && <span className="ml-auto rounded-full bg-crit px-1.5 font-mono text-[10px] font-bold text-white">{unread}</span>}</button>))}
@@ -235,6 +239,7 @@ export default function App() {
           <main className="relative min-w-0 flex-1 overflow-auto">
             {page === "home" && <Home />}
             {page === "inbox" && <Inbox />}
+            {page === "guardrails" && <Guardrails />}
             {page === "workspace" && (spec && project ? <Workspace key={project.id} /> :
               <div className="flex h-full flex-col items-center justify-center text-muted"><FolderKanban size={40} className="text-line-strong" />
                 <p className="mt-2">Open a project or start one from Home.</p></div>)}

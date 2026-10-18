@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowRight, BadgeCheck, Bot, Inbox as InboxIcon, Loader2, Mail, MailOpen, ScanSearch, Sparkles, TrainFront } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShieldX, ThumbsDown, ThumbsUp, UserCheck, BadgeCheck, Bot, Inbox as InboxIcon, Loader2, Mail, MailOpen, ScanSearch, Sparkles, TrainFront } from "lucide-react";
 import { api, eur, type Email } from "../api";
 import { useApp } from "../App";
 import { RiskBadge, Tag } from "../components/ui";
@@ -7,6 +7,7 @@ import { RiskBadge, Tag } from "../components/ui";
 const SCENARIOS = [
   { id: "brake_delay", label: "Brake supplier: 6-week delay" },
   { id: "door_delay", label: "Door supplier: 3-week delay + rework" },
+  { id: "phishing", label: "Phishing: fake bank details + injection" },
 ];
 
 function Delta({ label, before, after, fmt = (v: number) => String(v), worseUp = true }: { label: string; before: number; after: number; fmt?: (v: number) => string; worseUp?: boolean }) {
@@ -41,6 +42,12 @@ export default function Inbox() {
 
   const r = sel ? res[sel.id] : null;
   const im = r?.impact;
+  const decide = async (m: Email, decision: "approved" | "rejected") => {
+    const e = await api.emailDecision(m.id, app.persona?.email ?? "", decision);
+    setRes((x) => ({ ...x, [m.id]: { ...x[m.id], email: e } }));
+    app.refreshInbox();
+  };
+  const status = r?.email?.analysis?.status ?? "proposed";
   const hitProjects = im ? app.projects.filter((p) => p.items?.some((i: any) => i.category === im.supplier.category)) : [];
 
   return (
@@ -88,7 +95,18 @@ export default function Inbox() {
 
             {busy && <div className="card flex items-center gap-2 p-4 text-sm text-muted"><Loader2 size={15} className="animate-spin" /> Email Agent is reading the email with {app.model.split("/").pop()} and recomputing the risk…</div>}
 
-            {r && !im && <div className="card p-4 text-sm text-muted">{r.note ?? "No supplier disruption found in this email."}</div>}
+            {r?.security_flags && (
+              <section className="card overflow-hidden border-2 border-crit">
+                <header className="flex items-center gap-2 bg-crit px-5 py-3 font-semibold text-white"><ShieldX size={18} /> Security guardrail: suspicious email, nothing executed</header>
+                <div className="space-y-2 p-5 text-sm">
+                  <p>{r.note}</p>
+                  <div className="label">Instruction patterns found in untrusted content</div>
+                  <ul className="list-disc pl-5 font-mono text-xs text-crit">{r.security_flags.map((f: string) => <li key={f}>{f}</li>)}</ul>
+                  <p className="text-xs text-muted">Email text is treated as data, never as instructions. Bank details are redacted before any model sees them.</p>
+                </div>
+              </section>
+            )}
+            {r && !im && !r.security_flags && <div className="card p-4 text-sm text-muted">{r.note ?? "No supplier disruption found in this email."}</div>}
 
             {im && (
               <section className="card overflow-hidden border-2 border-crit/60">
@@ -123,7 +141,7 @@ export default function Inbox() {
                       <ul className="space-y-1">
                         {Object.entries(im.score_changes).map(([k, v]: any) => <li key={k} className="font-mono text-xs">{k}: {v.from} → <b>{v.to}</b></li>)}
                         <li className="text-xs">{im.open_orders} open orders · {eur(im.open_order_value_eur)} affected</li>
-                        {im.recommendable_before && !im.recommendable_after && <li className="font-semibold text-crit">Removed from recommended suppliers (delivery below 90%)</li>}
+                        {im.recommendable_before && !im.recommendable_after && <li className="font-semibold text-crit">{status === "approved" ? "Removed from recommended suppliers" : "Would be removed from recommended suppliers"} (delivery below 90%)</li>}
                         {im.trainsets_affected > 0 && <li className="flex items-center gap-1 text-xs"><TrainFront size={13} /> {im.affected_fleets.map((f: any) => `${f.fleet} (${f.trainsets})`).join(", ")}</li>}
                         {hitProjects.map((p) => <li key={p.id} className="text-xs">Your project <button className="font-semibold text-petrol hover:underline" onClick={() => app.openProject(p.id)}>{p.name}</button> needs {im.supplier.category.toLowerCase()}</li>)}
                       </ul>
@@ -135,6 +153,16 @@ export default function Inbox() {
                           <span className="flex items-center gap-1.5">{i === 0 && <BadgeCheck size={14} className="text-low" />}{a.name} <span className="font-mono text-[10px] text-muted">{a.id} · {a.country}</span></span>
                           <RiskBadge score={a.risk} /></button>))}
                     </div>
+                  </div>
+                  <div className={`flex flex-wrap items-center justify-between gap-3 rounded border-2 p-3 ${status === "approved" ? "border-low bg-[#ecfdf5]" : status === "rejected" ? "border-line bg-canvas" : "border-petrol bg-tint"}`}>
+                    <div className="flex items-center gap-2 text-sm"><UserCheck size={17} className="text-petrol" />
+                      {status === "proposed" ? <span><b>Your decision:</b> apply the recalculated risk to recommendations and the supplier tree?</span>
+                        : <span>Recalculated risk <b>{status}</b> by you · written to the audit log</span>}</div>
+                    {status === "proposed" ? (
+                      <div className="flex gap-2">
+                        <button className="btn btn-primary" onClick={() => decide(sel, "approved")}><ThumbsUp size={14} /> Approve &amp; apply</button>
+                        <button className="btn btn-ghost" onClick={() => decide(sel, "rejected")}><ThumbsDown size={14} /> Reject</button>
+                      </div>) : <button className="btn btn-ghost !py-1 text-xs" onClick={() => decide(sel, status === "approved" ? "rejected" : "approved")}>Undo</button>}
                   </div>
                   <details className="text-xs text-muted"><summary className="cursor-pointer font-semibold">How the new risk is calculated</summary>
                     <p className="mt-1">{im.method}</p><p className="mt-1">{im.label}</p></details>

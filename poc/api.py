@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 import data_tools as dt
 from agents import Run, build_system_prompt, run_supervisor
+import guardrails as gr
 from config import ENRICH_DIR, NEBIUS_API_KEY, NVIDIA_API_KEY, OCR_MODELS, PROVIDERS, ROOT, TAVILY_API_KEY
 from extract import chunk_docs, extract_file, list_files
 from llm import list_models
@@ -24,6 +25,7 @@ from workspace import router as workspace_router  # noqa: E402
 app.include_router(workspace_router)
 from email_connector import router as email_router  # noqa: E402
 app.include_router(email_router)
+app.include_router(gr.router)
 STATE = {"docs": [], "folder": str(ROOT / "sample_docs")}
 WEB_DIST = ROOT.parent / "web" / "dist"
 PILLARS = {
@@ -275,6 +277,7 @@ class ChatReq(BaseModel):
     provider: str = "NVIDIA API (build.nvidia.com)"
     web: bool = True
     history: list[dict] = []
+    user: str = ""  # email; selects the user's boundaries
 
 
 def _persona(pid: str) -> dict:
@@ -284,8 +287,9 @@ def _persona(pid: str) -> dict:
 @app.post("/api/system-prompt")
 def system_prompt(req: ChatReq):
     chunks = chunk_docs([d for d in STATE["docs"] if d["chars"]])
-    return {"prompt": build_system_prompt(_persona(req.persona_id), {"data": True, "email": True, "docs": len(chunks), "web": req.web},
-                                          req.notes)}
+    b = gr.get_boundaries(req.user)
+    return {"prompt": build_system_prompt(_persona(req.persona_id), {"data": True, "email": True, "docs": len(chunks), "web": req.web and b["allow_web"]},
+                                          req.notes, b)}
 
 
 @app.post("/api/chat")
@@ -298,12 +302,36 @@ def chat(req: ChatReq):
         data = e.data if isinstance(e.data, dict) else None
         q.put({"type": "event", **clean(asdict(e) | {"data": data})})
 
+    user = req.user or persona.get("email", "")
+    b = gr.get_boundaries(user)
+
     def work():
         run = Run(on_event=emit, provider=req.provider)
         try:
-            ans = run_supervisor(req.question, req.history, persona, req.notes, req.model, chunks,
-                                 req.web and bool(TAVILY_API_KEY), run)
-            q.put({"type": "final", "answer": ans})
+            # 1. input guardrail
+            g = gr.input_guard(req.question)
+            run.emit("Guardrail", "plan", "Input check: " + ("BLOCKED prompt-injection pattern" if g["blocked"] else
+                     f"redacted {', '.join(g['redacted'])}" if g["redacted"] else "clean"), {"input": g["injection"] + g["redacted"]})
+            if g["blocked"]:
+                gr.audit(user, "blocked_input", req.question, "blocked by input guardrail", {"patterns": g["injection"]})
+                q.put({"type": "final", "answer": "**Request blocked by the input guardrail.** It contains instructions that try to "
+                       "override the system rules. Nothing was sent to the agents. This event is in the audit log.",
+                       "validation": {"verdict": "block", "checks": [{"name": "Input guardrail", "status": "fail",
+                                      "detail": f"prompt-injection pattern: {g['injection'][0]}"}], "actions": []}})
+                return
+            run.emit("Guardrail", "plan", f"Boundaries applied: risk ≤ {b['max_recommend_risk']}"
+                     f"{', EU only' if b['eu_only'] else ''}{', IRIS required' if b['require_iris'] else ''}"
+                     f", approval above €{b['approval_threshold_eur']:,.0f}{'' if b['allow_web'] else ', web OFF'}")
+            # 2. supervisor with the user's boundaries as hard rules
+            ans = run_supervisor(g["text"], req.history, persona, req.notes, req.model, chunks,
+                                 req.web and b["allow_web"] and bool(TAVILY_API_KEY), run, b)
+            # 3. Validator Agent
+            run.emit("Validator Agent", "plan", "Checking grounding, supplier IDs, boundaries, citations, leakage")
+            v = gr.validate(req.question, ans, run.events, b)
+            for c in v["checks"]:
+                run.emit("Validator Agent", "plan", f"{c['status'].upper()} · {c['name']}: {c['detail']}")
+            gr.audit(user, "answer", req.question, f"validator: {v['verdict']}", {"checks": [c["status"] for c in v["checks"]]})
+            q.put({"type": "final", "answer": ans, "validation": v})
         except Exception as ex:
             q.put({"type": "error", "error": str(ex)})
         q.put(None)
